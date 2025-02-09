@@ -57,6 +57,12 @@ const Student = sequelize.define(
 			type: DataTypes.DATEONLY,
 			allowNull: false,
 			field: 'DateOfBirth',
+			get() {
+				return this.getDataValue('dateOfBirth') ? this.getDataValue('dateOfBirth').toISOString().split('T')[0] : null
+			},
+			set(value) {
+				this.setDataValue('dateOfBirth', new Date(value).toISOString().split('T')[0])
+			},
 		},
 		address: {
 			type: DataTypes.TEXT,
