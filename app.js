@@ -13,6 +13,7 @@ app.use(cors())
 app.use(express.json())
 app.use(middleware.tokenExtractor)
 // app.use(middleware.userExtractor)
+app.use(express.static('public'))
 
 const testConnection = async () => {
 	try {
@@ -30,7 +31,7 @@ app.get('/', (req, res) => {
 	res.send('Hello World!')
 })
 
-app.use('/login', loginRouter)
+app.use('/api/login', loginRouter)
 app.use('/api/students', studentRouter)
 app.use('/api/admins', adminRouter)
 app.use('/api/departments', departmentRouter)

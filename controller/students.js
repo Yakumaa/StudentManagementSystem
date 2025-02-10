@@ -1,6 +1,7 @@
 const Student = require('../models/Student')
 const Department = require('../models/Department')
 const studentRouter = require('express').Router()
+const bcrypt = require('bcrypt')
 
 studentRouter.get('/', async (req, res) => {
 	try {
@@ -30,8 +31,8 @@ studentRouter.post('/', async (req, res) => {
 		// if (!department) {
 		// 	return res.status(400).json({ error: 'Invalid departmentId' })
 		// }
-
-		const student = await Student.create(req.body)
+		const hashedPassword = await bcrypt.hash(req.body.password, 10)
+		const student = await Student.create({ ...req.body, password: hashedPassword })
 		res.status(201).json(student)
 	} catch (error) {
 		res.status(400).json({ error: error.message })
