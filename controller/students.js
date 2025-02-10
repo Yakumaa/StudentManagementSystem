@@ -24,48 +24,17 @@ studentRouter.get('/:id', async (req, res) => {
 	}
 })
 
-// studentRouter.post('/', async (req, res) => {
-// 	try {
-// 		const department = await Department.findByPk(req.body.departmentId)
-// 		if (!department) {
-// 			return res.status(400).json({ error: 'Invalid departmentId' })
-// 		}
-
-// 		console.log(typeof req.body.dateOfBirth)
-// 		const student = await Student.create(req.body)
-// 		res.status(201).json(student)
-// 	} catch (error) {
-// 		res.status(500).json({ error: error.message })
-// 	}
-// })
-
 studentRouter.post('/', async (req, res) => {
 	try {
-		const department = await Department.findByPk(req.body.departmentId)
-		if (!department) {
-			return res.status(400).json({ error: 'Invalid departmentId' })
-		}
-
-		// Log the received date before conversion
-		console.log('Received dateOfBirth:', req.body.dateOfBirth)
-
-		// Ensure the date is converted to 'YYYY-MM-DD' before inserting
-		const dateObj = new Date(req.body.dateOfBirth)
-		const formattedDate = dateObj.toISOString().split('T')[0] // Extracts 'YYYY-MM-DD'
-
-		console.log('Formatted dateOfBirth:', formattedDate)
-
-		// Replace in request body
-		req.body.dateOfBirth = formattedDate
-
-		// Log the entire request body
-		console.log('Final Payload:', req.body)
+		// const department = await Department.findByPk(req.body.departmentId)
+		// if (!department) {
+		// 	return res.status(400).json({ error: 'Invalid departmentId' })
+		// }
 
 		const student = await Student.create(req.body)
 		res.status(201).json(student)
 	} catch (error) {
-		console.error('Error:', error) // Log the full error
-		res.status(500).json({ error: error.message })
+		res.status(400).json({ error: error.message })
 	}
 })
 

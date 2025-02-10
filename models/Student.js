@@ -54,15 +54,9 @@ const Student = sequelize.define(
 			},
 		},
 		dateOfBirth: {
-			type: DataTypes.DATEONLY,
+			type: DataTypes.DATE,
 			allowNull: false,
 			field: 'DateOfBirth',
-			get() {
-				return this.getDataValue('dateOfBirth') ? this.getDataValue('dateOfBirth').toISOString().split('T')[0] : null
-			},
-			set(value) {
-				this.setDataValue('dateOfBirth', new Date(value).toISOString().split('T')[0])
-			},
 		},
 		address: {
 			type: DataTypes.TEXT,
@@ -122,8 +116,7 @@ const Student = sequelize.define(
 	},
 	{
 		tableName: 'Students',
-		createdAt: 'CreatedAt',
-		updatedAt: 'UpdatedAt',
+		timestamps: false, // Disable automatic timestamps
 	}
 )
 

@@ -1,15 +1,18 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-
-const studentRouter = require('./controller/students')
-
 const middleware = require('./utils/middleware')
 const sequelize = require('./utils/config')
-const Department = require('./models/Department')
+const loginRouter = require('./controller/login')
+const studentRouter = require('./controller/students')
+const adminRouter = require('./controller/admins')
+const departmentRouter = require('./controller/departments')
+const attendanceRouter = require('./controller/attendances')
 
 app.use(cors())
 app.use(express.json())
+app.use(middleware.tokenExtractor)
+// app.use(middleware.userExtractor)
 
 const testConnection = async () => {
 	try {
@@ -27,16 +30,11 @@ app.get('/', (req, res) => {
 	res.send('Hello World!')
 })
 
-app.get('/api/departments', async (req, res) => {
-	try {
-		const departments = await Department.findAll()
-		res.json(departments)
-	} catch (error) {
-		res.status(500).json({ error: error.message })
-	}
-})
-
+app.use('/login', loginRouter)
 app.use('/api/students', studentRouter)
+app.use('/api/admins', adminRouter)
+app.use('/api/departments', departmentRouter)
+app.use('/api/attendances', attendanceRouter)
 
 app.use(middleware.requestLogger)
 app.use(middleware.errorHandler)
