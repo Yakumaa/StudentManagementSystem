@@ -48,83 +48,145 @@
 		</nav>
 
 		<div class="container mt-4">
-			<!-- Students Section -->
-			<div id="studentsSection">
-				<div class="d-flex justify-content-between align-items-center mb-4">
-					<h2>Students</h2>
-					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-						<i class="bi bi-plus-circle"></i> Add Student
-					</button>
+			<div class="alert-toast">
+				<!-- Students Section -->
+				<div id="studentsSection">
+					<div class="d-flex justify-content-between align-items-center mb-4">
+						<h2>Students</h2>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+							<i class="bi bi-plus-circle"></i> Add Student
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Email</th>
+									<th>Gender</th>
+									<th>Date of Birth</th>
+									<th>Address</th>
+									<th>Phone No.</th>
+									<th>Batch Year</th>
+									<th>Semester</th>
+									<th>Shift</th>
+									<th>Attendance</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody id="studentsTableBody"></tbody>
+						</table>
+					</div>
 				</div>
-				<div class="table-responsive">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Name</th>
-								<th>Email</th>
-								<th>Gender</th>
-								<th>Date of Birth</th>
-								<th>Address</th>
-								<th>Phone No.</th>
-								<th>Batch Year</th>
-								<th>Semester</th>
-								<th>Shift</th>
-								<th>Attendance</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody id="studentsTableBody"></tbody>
-					</table>
-				</div>
-			</div>
 
-			<!-- Admins Section -->
-			<div id="adminsSection" style="display: none">
-				<div class="d-flex justify-content-between align-items-center mb-4">
-					<h2>Administrators</h2>
-					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
-						<i class="bi bi-plus-circle"></i> Add Admin
-					</button>
-				</div>
-				<div class="table-responsive">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Name</th>
-								<th>Email</th>
-								<th>Phone No.</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody id="adminsTableBody"></tbody>
-					</table>
+				<!-- Admins Section -->
+				<div id="adminsSection" style="display: none">
+					<div class="d-flex justify-content-between align-items-center mb-4">
+						<h2>Administrators</h2>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+							<i class="bi bi-plus-circle"></i> Add Admin
+						</button>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Email</th>
+									<th>Phone No.</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody id="adminsTableBody"></tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Add Student Modal -->
+		<!-- Replace the existing Add Student Modal in admin-dashboard.html with this updated version -->
 		<div class="modal fade" id="addStudentModal">
-			<div class="modal-dialog">
+			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title">Add New Student</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 					</div>
 					<div class="modal-body">
-						<form id="addStudentForm">
-							<div class="mb-3">
-								<label class="form-label">Name</label>
-								<input type="text" class="form-control" name="name" required />
-							</div>
-							<div class="mb-3">
-								<label class="form-label">Email</label>
-								<input type="email" class="form-control" name="email" required />
-							</div>
-							<div class="mb-3">
-								<label class="form-label">Password</label>
-								<input type="password" class="form-control" name="password" required />
+						<form id="addStudentForm" class="needs-validation" novalidate>
+							<div class="row g-3">
+								<!-- Personal Information -->
+								<div class="col-md-6">
+									<label class="form-label">First Name</label>
+									<input type="text" class="form-control" name="firstName" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Last Name</label>
+									<input type="text" class="form-control" name="lastName" required />
+								</div>
+								<div class="col-12">
+									<label class="form-label">Father's Name</label>
+									<input type="text" class="form-control" name="fathersName" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Email</label>
+									<input type="email" class="form-control" name="email" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Password</label>
+									<input type="password" class="form-control" name="password" required />
+								</div>
+
+								<!-- Additional Details -->
+								<div class="col-md-6">
+									<label class="form-label">Gender</label>
+									<select class="form-select" name="gender" required>
+										<option value="">Choose...</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+										<option value="Other">Other</option>
+									</select>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Date of Birth</label>
+									<input type="date" class="form-control" name="dateOfBirth" required />
+								</div>
+								<div class="col-12">
+									<label class="form-label">Address</label>
+									<input type="text" class="form-control" name="address" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Phone Number</label>
+									<input type="tel" class="form-control" name="phoneNumber" pattern="[0-9]{10}" required />
+								</div>
+
+								<!-- Academic Information -->
+								<div class="col-md-6">
+									<label class="form-label">Department</label>
+									<select class="form-select" name="departmentId" required>
+										<option value="">Choose...</option>
+										<!-- Will be populated dynamically -->
+									</select>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label">Batch Year</label>
+									<input type="number" class="form-control" name="batchYear" min="2020" max="2030" required />
+								</div>
+								<div class="col-md-4">
+									<label class="form-label">Current Semester</label>
+									<input type="number" class="form-control" name="currentSemester" min="1" max="8" required />
+								</div>
+								<div class="col-md-4">
+									<label class="form-label">Shift</label>
+									<select class="form-select" name="shift" required>
+										<option value="">Choose...</option>
+										<option value="Morning">Morning</option>
+										<option value="Day">Day</option>
+									</select>
+								</div>
 							</div>
 						</form>
 					</div>

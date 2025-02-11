@@ -30,7 +30,7 @@ $(document).ready(function () {
 		})
 
 		// Form submission
-		$('#registrationForm').on('submit', handleRegistration)
+		$('#addStudentForm').on('submit', handleRegistration)
 	}
 
 	function handleRegistration(e) {

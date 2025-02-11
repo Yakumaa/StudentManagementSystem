@@ -7,11 +7,14 @@ $(document).ready(function () {
 	const ENDPOINTS = {
 		students: `${API_URL}/students`,
 		admins: `${API_URL}/admins`,
+		departments: `${API_URL}/departments`,
 	}
 
 	// Initialize
 	loadUserInfo()
 	loadStudents()
+	// loadDepartments()
+	// setupFormValidation()
 	setupEventListeners()
 
 	function loadUserInfo() {
@@ -109,9 +112,50 @@ $(document).ready(function () {
 	}
 
 	function handleSave(type) {
-		const formId = type === 'student' ? '#addStudentForm' : '#addAdminForm'
-		const modalId = type === 'student' ? '#addStudentModal' : '#addAdminModal'
-		const endpoint = type === 'student' ? ENDPOINTS.students : ENDPOINTS.admins
+		if (type === 'student') {
+			handleStudentSave()
+		} else {
+			handleAdminSave()
+		}
+	}
+
+	function handleStudentSave() {
+		const form = $('#addStudentForm')[0]
+		if (!form.checkValidity()) {
+			form.classList.add('was-validated')
+			return
+		}
+
+		const formData = new FormData(form)
+		const studentData = {
+			registrationNumber: generateRegistrationNumber(),
+			// profilePicture: 'default.jpg',
+			attendance: 100,
+		}
+
+		// Convert FormData to JSON
+		formData.forEach((value, key) => {
+			studentData[key] = value
+		})
+
+		$.ajax({
+			url: ENDPOINTS.students,
+			method: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify(studentData),
+			success: function (response) {
+				$('#addStudentModal').modal('hide')
+				form.reset()
+				loadStudents()
+				showAlert('Success', 'Student added successfully!', 'success')
+			},
+			error: handleError,
+		})
+	}
+
+	function handleAdminSave() {
+		const formId = '#addAdminForm'
+		const modalId = '#addAdminModal'
 
 		const formData = {}
 		$(formId)
@@ -121,23 +165,46 @@ $(document).ready(function () {
 			})
 
 		$.ajax({
-			url: endpoint,
+			url: ENDPOINTS.admins,
 			method: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(formData),
 			success: function (response) {
 				$(modalId).modal('hide')
 				$(formId)[0].reset()
-				if (type === 'student') {
-					loadStudents()
-				} else {
-					loadAdmins()
-				}
-				showAlert('Success', `${type} added successfully!`, 'success')
+				loadAdmins()
+				showAlert('Success', 'Administrator added successfully!', 'success')
 			},
 			error: handleError,
 		})
 	}
+
+	function generateRegistrationNumber() {
+		const year = new Date().getFullYear()
+		const random = Math.floor(Math.random() * 1000)
+			.toString()
+			.padStart(3, '0')
+		return `REG${year}${random}`
+	}
+
+	$('#addStudentModal').on('show.bs.modal', function () {
+		$.get(ENDPOINTS.departments)
+			.done((departments) => {
+				const options = departments
+					.map((dept) => `<option value="${dept.departmentId}">${dept.departmentName}</option>`)
+					.join('')
+				$('select[name="departmentId"]').html('<option value="">Choose...</option>' + options)
+			})
+			.fail(handleError)
+
+		// Set default batch year
+		$('input[name="batchYear"]').val(new Date().getFullYear())
+	})
+
+	// Add phone number validation
+	$('input[name="phoneNumber"]').on('input', function () {
+		this.value = this.value.replace(/[^0-9]/g, '')
+	})
 
 	// function deleteStudent(id) {
 	// 	if (confirm('Are you sure you want to delete this student?')) {
@@ -184,6 +251,6 @@ $(document).ready(function () {
 		$('.alert').remove()
 
 		// Add new alert at the top of the container
-		$('.container').prepend(alert)
+		$('.alert-toast').prepend(alert)
 	}
 })
