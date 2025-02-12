@@ -10,15 +10,15 @@ const FormData = sequelize.define(
 			autoIncrement: true,
 			field: 'DataID',
 		},
-		studentId: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			field: 'StudentID',
-			references: {
-				model: 'Students',
-				key: 'StudentID',
-			},
-		},
+		// studentId: {
+		// 	type: DataTypes.INTEGER,
+		// 	allowNull: false,
+		// 	field: 'StudentID',
+		// 	references: {
+		// 		model: 'Students',
+		// 		key: 'StudentID',
+		// 	},
+		// },
 		templateId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
@@ -28,29 +28,176 @@ const FormData = sequelize.define(
 				key: 'TemplateID',
 			},
 		},
-		fieldId: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			field: 'FieldID',
-			references: {
-				model: 'FormFields',
-				key: 'FieldID',
-			},
+		fieldValue1: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
 		},
-		fieldValue: {
-			type: DataTypes.TEXT,
-			field: 'FieldValue',
+		fieldValue2: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
 		},
-		createdAt: {
-			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
-			field: 'CreatedAt',
+		fieldValue3: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
 		},
-		updatedAt: {
-			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
-			field: 'UpdatedAt',
+		fieldValue4: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
 		},
+		fieldValue5: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue6: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue7: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue8: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue9: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue10: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue11: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue12: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue13: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue14: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue15: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue16: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue17: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue18: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue19: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue20: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue21: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue22: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue23: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue24: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue25: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue26: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue27: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue28: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue29: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue30: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue31: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue32: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue33: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue34: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue35: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue36: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue37: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue38: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue39: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		fieldValue40: {
+			type: DataTypes.STRING(255),
+			allowNull: true,
+		},
+		// createdAt: {
+		// 	type: DataTypes.DATE,
+		// 	defaultValue: DataTypes.NOW,
+		// 	field: 'CreatedAt',
+		// },
+		// updatedAt: {
+		// 	type: DataTypes.DATE,
+		// 	defaultValue: DataTypes.NOW,
+		// 	field: 'UpdatedAt',
+		// },
 	},
 	{
 		tableName: 'FormData',

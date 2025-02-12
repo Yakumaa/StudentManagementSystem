@@ -47,20 +47,20 @@ const defineAssociations = () => {
 		as: 'template',
 	})
 
-	FormData.belongsTo(FormField, {
-		foreignKey: 'fieldId',
-		as: 'field',
-	})
+	// FormData.belongsTo(FormField, {
+	// 	foreignKey: 'fieldId',
+	// 	as: 'field',
+	// })
 
 	FormData.belongsTo(FormTemplate, {
 		foreignKey: 'templateId',
 		as: 'template',
 	})
 
-	FormData.belongsTo(Student, {
-		foreignKey: 'studentId',
-		as: 'student',
-	})
+	// FormData.belongsTo(Student, {
+	// 	foreignKey: 'studentId',
+	// 	as: 'student',
+	// })
 }
 
 module.exports = defineAssociations
