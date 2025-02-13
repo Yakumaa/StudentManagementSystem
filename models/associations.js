@@ -5,6 +5,7 @@ const AttendanceRecord = require('./AttendanceRecord')
 const FormTemplate = require('./FormTemplate')
 const FormField = require('./FormField')
 const FormData = require('./FormData')
+const Form = require('./Form')
 
 const defineAssociations = () => {
 	// Department - Student associations
@@ -53,6 +54,16 @@ const defineAssociations = () => {
 	// })
 
 	FormData.belongsTo(FormTemplate, {
+		foreignKey: 'templateId',
+		as: 'template',
+	})
+
+	Form.hasMany(FormData, {
+		foreignKey: 'formId',
+		as: 'data',
+	})
+
+	Form.belongsTo(FormTemplate, {
 		foreignKey: 'templateId',
 		as: 'template',
 	})

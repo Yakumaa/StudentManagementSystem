@@ -28,6 +28,15 @@ const FormData = sequelize.define(
 				key: 'TemplateID',
 			},
 		},
+		formId: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			field: 'FormID',
+			references: {
+				model: 'Form',
+				key: 'FormID',
+			},
+		},
 		fieldValue1: {
 			type: DataTypes.STRING(255),
 			allowNull: true,
@@ -187,6 +196,11 @@ const FormData = sequelize.define(
 		fieldValue40: {
 			type: DataTypes.STRING(255),
 			allowNull: true,
+		},
+		isActive: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: 1,
+			field: 'IsActive',
 		},
 		// createdAt: {
 		// 	type: DataTypes.DATE,

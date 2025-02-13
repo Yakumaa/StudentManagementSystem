@@ -1,4 +1,6 @@
 const FormData = require('../models/FormData')
+const Form = require('../models/Form')
+const sequelize = require('../utils/config')
 const FormField = require('../models/FormField')
 const FormTemplate = require('../models/FormTemplate')
 const Student = require('../models/Student')
@@ -9,147 +11,199 @@ defineAssociations()
 
 formDataRouter.get('/', async (req, res) => {
 	try {
-		const formData = await FormData.findAll({})
+		const formData = await FormData.findAll({
+			where: { isActive: 1 }, // Only get active records
+		})
 		res.json(formData)
 	} catch (error) {
 		res.status(500).json({ error: error.message })
 	}
 })
 
-// formDataRouter.get('/student/:studentId', async (req, res) => {
-// 	try {
-// 		const formData = await FormData.findAll({
-// 			where: {
-// 				studentId: req.params.studentId,
-// 			},
-// 			include: [
-// 				{
-// 					model: FormField,
-// 					as: 'field',
-// 					attributes: ['fieldName', 'fieldType'],
-// 				},
-// 				{
-// 					model: FormTemplate,
-// 					as: 'template',
-// 					attributes: ['templateName'],
-// 				},
-// 			],
-// 		})
-
-// 		// Restructure the data for easier frontend consumption
-// 		const structured = formData.reduce((acc, data) => {
-// 			const templateId = data.templateId
-// 			if (!acc[templateId]) {
-// 				acc[templateId] = {
-// 					templateName: data.template.templateName,
-// 					fields: {},
-// 				}
-// 			}
-// 			acc[templateId].fields[data.field.fieldName] = data.fieldValue
-// 			return acc
-// 		}, {})
-
-// 		res.json(structured)
-// 	} catch (error) {
-// 		res.status(500).json({ error: error.message })
-// 	}
-// })
-
-formDataRouter.post('/submit', async (req, res) => {
+formDataRouter.get('/:id', async (req, res) => {
 	try {
-		const {
-			templateId,
-			registrationNumber,
-			firstName,
-			lastName,
-			fathersName,
-			email,
-			gender,
-			dateOfBirth,
-			address,
-			phoneNumber,
-			departmentId,
-			batchYear,
-			currentSemester,
-			shift,
-			profilePicture,
-			attendance,
-		} = req.body
-
-		// Ensure that required fields are provided
-		if (!templateId || !registrationNumber || !firstName || !lastName) {
-			return res.status(400).json({ error: 'Missing required fields' })
+		const formData = await FormData.findByPk(req.params.id, {})
+		if (formData) {
+			res.json(formData)
+		} else {
+			res.status(404).end()
 		}
-
-		// Insert form data
-		await FormData.create({
-			templateId,
-			fieldValue1: registrationNumber,
-			fieldValue2: firstName,
-			fieldValue3: lastName,
-			fieldValue4: fathersName,
-			fieldValue5: email,
-			fieldValue6: gender,
-			fieldValue7: dateOfBirth, // Ensure correct date format
-			fieldValue8: address,
-			fieldValue9: phoneNumber,
-			fieldValue10: departmentId,
-			fieldValue11: batchYear,
-			fieldValue12: currentSemester,
-			fieldValue13: shift,
-			fieldValue14: profilePicture || null,
-			fieldValue15: attendance,
-		})
-
-		res.status(201).json({ message: 'Form data submitted successfully' })
 	} catch (error) {
-		res.status(400).json({ error: error.message })
+		res.status(500).json({ error: error.message })
 	}
 })
 
+// formDataRouter.post('/', async (req, res) => {
+// 	console.log(req.body)
+// 	try {
+// 		const {
+// 			templateId,
+// 			registrationNumber,
+// 			firstName,
+// 			lastName,
+// 			fathersName,
+// 			email,
+// 			gender,
+// 			dateOfBirth,
+// 			address,
+// 			phoneNumber,
+// 			departmentId,
+// 			batchYear,
+// 			currentSemester,
+// 			shift,
+// 			profilePicture,
+// 			attendance,
+// 		} = req.body
+
+// 		// Ensure that required fields are provided
+// 		if (!templateId || !registrationNumber || !firstName || !lastName) {
+// 			return res.status(400).json({ error: 'Missing required fields' })
+// 		}
+
+// 		// Insert form data
+// 		await FormData.create({
+// 			templateId,
+// 			fieldValue1: registrationNumber,
+// 			fieldValue2: firstName,
+// 			fieldValue3: lastName,
+// 			fieldValue4: fathersName,
+// 			fieldValue5: email,
+// 			fieldValue6: gender,
+// 			fieldValue7: dateOfBirth,
+// 			fieldValue8: address,
+// 			fieldValue9: phoneNumber,
+// 			fieldValue10: departmentId,
+// 			fieldValue11: batchYear,
+// 			fieldValue12: currentSemester,
+// 			fieldValue13: shift,
+// 			fieldValue14: profilePicture || null,
+// 			fieldValue15: attendance,
+// 		})
+
+// 		res.status(201).json({ message: 'Form data submitted successfully' })
+// 	} catch (error) {
+// 		res.status(400).json({ error: error.message })
+// 	}
+// })
+
 formDataRouter.post('/', async (req, res) => {
+	const {
+		templateId,
+		registrationNumber,
+		firstName,
+		lastName,
+		fathersName,
+		email,
+		gender,
+		dateOfBirth,
+		address,
+		phoneNumber,
+		departmentId,
+		batchYear,
+		currentSemester,
+		shift,
+		profilePicture,
+		attendance,
+	} = req.body
+
+	console.log('Received templateId:', templateId)
+
+	// Begin transaction
+	const t = await sequelize.transaction()
+
 	try {
-		const { studentId, templateId, fieldValues } = req.body
+		//Insert into Form table to create a form submission record
+		const form = await Form.create(
+			{
+				templateId: templateId,
+				submittedBy: 'admin', //TODO: Change this to the logged-in user
+				submittedAt: new Date(),
+			},
+			{ transaction: t }
+		)
 
-		// Validate that student exists
-		const student = await Student.findByPk(studentId)
-		if (!student) {
-			return res.status(404).json({ error: 'Student not found' })
-		}
+		// console.log(form)
 
-		// Validate that template exists
-		const template = await FormTemplate.findByPk(templateId)
-		if (!template) {
-			return res.status(404).json({ error: 'Form template not found' })
-		}
+		// Retrieve the generated FormID
+		const formId = form.dataValues.formId
+		// console.log('Generated FormID:', formId)
 
-		// Get the form fields for this template to validate the submission
-		const formFields = await FormField.findAll({
-			where: { templateId: templateId },
-		})
+		// Insert into FormData table using the generated FormID
+		await FormData.create(
+			{
+				templateId: templateId,
+				formId: formId, // Link to the Form record
+				fieldValue1: registrationNumber,
+				fieldValue2: firstName,
+				fieldValue3: lastName,
+				fieldValue4: fathersName,
+				fieldValue5: email,
+				fieldValue6: gender,
+				fieldValue7: dateOfBirth,
+				fieldValue8: address,
+				fieldValue9: phoneNumber,
+				fieldValue10: departmentId,
+				fieldValue11: batchYear,
+				fieldValue12: currentSemester,
+				fieldValue13: shift,
+				fieldValue14: profilePicture || null,
+				fieldValue15: attendance,
+			},
+			{ transaction: t }
+		)
 
-		// Create form data object with dynamic fields
-		let formDataObj = {
-			studentId,
-			templateId,
-		}
+		// Commit transaction if both inserts succeed
+		await t.commit()
 
-		// Map the field values to FieldValue1, FieldValue2, etc.
-		formFields.forEach((field, index) => {
-			const fieldNumber = index + 1
-			if (fieldNumber <= 40) {
-				// Since we have FieldValue1 to FieldValue40
-				const fieldColumnName = `fieldValue${fieldNumber}`
-				formDataObj[fieldColumnName] = fieldValues[field.fieldName] || null
-			}
-		})
-
-		// Create the form data record
-		const newFormData = await FormData.create(formDataObj)
-
-		res.status(201).json(newFormData)
+		res.status(201).json({ message: 'Form submitted successfully' })
 	} catch (error) {
-		console.error('Error creating form data:', error)
+		// Roll back transaction on error
+		await t.rollback()
+		res.status(500).json({ error: error.message })
+	}
+})
+
+formDataRouter.put('/:id', async (req, res) => {
+	try {
+		const dataId = req.params.id
+		const updatedData = req.body
+
+		// Map the form fields to the correct fieldValue columns
+		const mappedData = {
+			fieldValue1: updatedData.registrationNumber,
+			fieldValue2: updatedData.firstName,
+			fieldValue3: updatedData.lastName,
+			fieldValue4: updatedData.fathersName,
+			fieldValue5: updatedData.email,
+			fieldValue6: updatedData.gender,
+			fieldValue7: updatedData.dateOfBirth,
+			fieldValue8: updatedData.address,
+			fieldValue9: updatedData.phoneNumber,
+			fieldValue10: updatedData.departmentId,
+			fieldValue11: updatedData.batchYear,
+			fieldValue12: updatedData.currentSemester,
+			fieldValue13: updatedData.shift,
+		}
+
+		await FormData.update(mappedData, {
+			where: { dataId: dataId },
+		})
+
+		res.json({ message: 'Record updated successfully' })
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+formDataRouter.delete('/:id', async (req, res) => {
+	try {
+		const formId = req.params.id
+		console.log('deleteid', formId)
+
+		await FormData.update({ isActive: 0 }, { where: { dataId: formId } })
+
+		res.json({ message: 'Record deactivated successfully' })
+	} catch (error) {
 		res.status(500).json({ error: error.message })
 	}
 })

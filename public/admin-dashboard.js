@@ -8,6 +8,7 @@ $(document).ready(function () {
 		students: `${API_URL}/students`,
 		admins: `${API_URL}/admins`,
 		departments: `${API_URL}/departments`,
+		formdata: `${API_URL}/form-data`,
 	}
 
 	// Initialize
@@ -54,32 +55,39 @@ $(document).ready(function () {
 	}
 
 	function loadStudents() {
-		$.get(ENDPOINTS.students)
-			.done((students) => {
-				const rows = students
+		$.get(ENDPOINTS.formdata)
+			.done((formData) => {
+				const rows = formData
 					.map(
 						(student) => `
                 <tr>
-                    <td>${student.studentId}</td>
-                    <td>${student.firstName + ' ' + student.lastName}</td>
-                    <td>${student.email}</td>
-                    <td>${student.gender}</td>
-                    <td>${student.dateOfBirth}</td>
-                    <td>${student.address}</td>
-                    <td>${student.phoneNumber}</td>
-                    <td>${student.batchYear}</td>
-                    <td>${student.currentSemester}</td>
-                    <td>${student.shift}</td>
-                    <td>${student.attendance + '%'}</td>
+                    <td>${student.dataId}</td>
+                    <td>${student.fieldValue1}</td>
+                    <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
+                    <td>${student.fieldValue5}</td>
+                    <td>${student.fieldValue6}</td>
+                    <td>${student.fieldValue7}</td>
+                    <td>${student.fieldValue8}</td>
+                    <td>${student.fieldValue9}</td>
+                    <td>${student.fieldValue11}</td>
+                    <td>${student.fieldValue12}</td>
+                    <td>${student.fieldValue13}</td>
                     <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.studentId})">
+                        <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                    
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
                 </tr>
-              `
+            `
 					)
 					.join('')
+
 				$('#studentsTableBody').html(rows)
 			})
 			.fail(handleError)
@@ -126,20 +134,19 @@ $(document).ready(function () {
 			return
 		}
 
+		console.log('form', form)
+
 		const formData = new FormData(form)
-		const studentData = {
-			registrationNumber: generateRegistrationNumber(),
-			// profilePicture: 'default.jpg',
-			attendance: 100,
+		console.log('formData', formData)
+		const studentData = Object.fromEntries(formData.entries())
+		console.log('studentData', studentData)
+
+		if (!studentData.registrationNumber) {
+			studentData.registrationNumber = generateRegistrationNumber()
 		}
 
-		// Convert FormData to JSON
-		formData.forEach((value, key) => {
-			studentData[key] = value
-		})
-
 		$.ajax({
-			url: ENDPOINTS.students,
+			url: ENDPOINTS.formdata,
 			method: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(studentData),
@@ -206,19 +213,75 @@ $(document).ready(function () {
 		this.value = this.value.replace(/[^0-9]/g, '')
 	})
 
-	// function deleteStudent(id) {
-	// 	if (confirm('Are you sure you want to delete this student?')) {
-	// 		$.ajax({
-	// 			url: `${ENDPOINTS.students}/${id}`,
-	// 			method: 'DELETE',
-	// 			success: function () {
-	// 				loadStudents()
-	// 				showAlert('Success', 'Student deleted successfully!', 'success')
-	// 			},
-	// 			error: handleError,
-	// 		})
-	// 	}
-	// }
+	window.editStudent = function (id) {
+		// Fetch student data by ID
+		$.get(`${ENDPOINTS.formdata}/${id}`)
+			.done((student) => {
+				// Populate the form with student data
+				$('#addStudentForm').find('[name="fieldValue1"]').val(student.fieldValue1)
+				$('#addStudentForm').find('[name="fieldValue2"]').val(student.fieldValue2)
+				$('#addStudentForm').find('[name="fieldValue3"]').val(student.fieldValue3)
+				$('#addStudentForm').find('[name="fieldValue4"]').val(student.fieldValue4)
+				$('#addStudentForm').find('[name="fieldValue5"]').val(student.fieldValue5)
+				$('#addStudentForm').find('[name="fieldValue6"]').val(student.fieldValue6)
+				$('#addStudentForm').find('[name="fieldValue7"]').val(student.fieldValue7)
+				$('#addStudentForm').find('[name="fieldValue8"]').val(student.fieldValue8)
+				$('#addStudentForm').find('[name="fieldValue9"]').val(student.fieldValue9)
+				$('#addStudentForm').find('[name="fieldValue10"]').val(student.fieldValue10)
+				$('#addStudentForm').find('[name="fieldValue11"]').val(student.fieldValue11)
+				$('#addStudentForm').find('[name="fieldValue12"]').val(student.fieldValue12)
+				$('#addStudentForm').find('[name="fieldValue13"]').val(student.fieldValue13)
+				$('#addStudentForm').find('[name="fieldValue14"]').val(student.fieldValue14)
+				$('#addStudentForm').find('[name="fieldValue15"]').val(student.fieldValue15)
+				// Show the modal
+				$('#addStudentModal').modal('show')
+
+				// Update the save button to handle update instead of create
+				$('#saveStudentBtn')
+					.off('click')
+					.click(() => handleUpdateStudent(id))
+			})
+			.fail(handleError)
+	}
+
+	function handleUpdateStudent(id) {
+		const form = $('#addStudentForm')[0]
+		if (!form.checkValidity()) {
+			form.classList.add('was-validated')
+			return
+		}
+
+		const formData = new FormData(form)
+		const studentData = Object.fromEntries(formData.entries())
+
+		$.ajax({
+			url: `${ENDPOINTS.formdata}/${id}`,
+			method: 'PUT',
+			contentType: 'application/json',
+			data: JSON.stringify(studentData),
+			success: function (response) {
+				$('#addStudentModal').modal('hide')
+				form.reset()
+				loadStudents()
+				showAlert('Success', 'Student updated successfully!', 'success')
+			},
+			error: handleError,
+		})
+	}
+
+	window.deleteStudent = function (id) {
+		if (confirm('Are you sure you want to delete this student?')) {
+			$.ajax({
+				url: `${ENDPOINTS.formdata}/${id}`,
+				method: 'DELETE',
+				success: function () {
+					loadStudents()
+					showAlert('Success', 'Student deleted successfully!', 'success')
+				},
+				error: handleError,
+			})
+		}
+	}
 
 	// function deleteAdmin(id) {
 	// 	if (confirm('Are you sure you want to delete this administrator?')) {

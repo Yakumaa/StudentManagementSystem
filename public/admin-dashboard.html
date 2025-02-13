@@ -62,16 +62,16 @@
 							<thead>
 								<tr>
 									<th>ID</th>
+									<th>Registration Number</th>
 									<th>Name</th>
 									<th>Email</th>
 									<th>Gender</th>
 									<th>Date of Birth</th>
 									<th>Address</th>
-									<th>Phone No.</th>
+									<th>Phone Number</th>
 									<th>Batch Year</th>
-									<th>Semester</th>
+									<th>Current Semester</th>
 									<th>Shift</th>
-									<th>Attendance</th>
 									<th>Actions</th>
 								</tr>
 							</thead>
@@ -107,7 +107,6 @@
 		</div>
 
 		<!-- Add Student Modal -->
-		<!-- Replace the existing Add Student Modal in admin-dashboard.html with this updated version -->
 		<div class="modal fade" id="addStudentModal">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
@@ -117,6 +116,7 @@
 					</div>
 					<div class="modal-body">
 						<form id="addStudentForm" class="needs-validation" novalidate>
+							<input type="hidden" name="templateId" value="1" />
 							<div class="row g-3">
 								<!-- Personal Information -->
 								<div class="col-md-6">
