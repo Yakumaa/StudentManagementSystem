@@ -20,9 +20,13 @@ const Form = sequelize.define(
 			},
 		},
 		submittedBy: {
-			type: DataTypes.STRING(255), //TODO: check if this is correct
-			allowNull: true,
-			field: 'SubmittedBy',
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			field: 'submittedBy',
+			references: {
+				model: 'Users',
+				key: 'userID',
+			},
 		},
 		// submittedAt: {
 		// 	type: DataTypes.DATE,
