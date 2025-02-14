@@ -55,44 +55,55 @@ $(document).ready(function () {
 	}
 
 	function loadStudents() {
-		$.get(ENDPOINTS.formdata)
-			.done((formData) => {
-				const rows = formData
-					.map(
-						(student) => `
-                <tr>
-                    <td>${student.dataId}</td>
-                    <td>${student.fieldValue1}</td>
-                    <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
-                    <td>${student.fieldValue5}</td>
-                    <td>${student.fieldValue6}</td>
-                    <td>${student.fieldValue7}</td>
-                    <td>${student.fieldValue8}</td>
-                    <td>${student.fieldValue9}</td>
-                    <td>${student.fieldValue11}</td>
-                    <td>${student.fieldValue12}</td>
-                    <td>${student.fieldValue13}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                    </td>
-                    
-                    <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `
-					)
-					.join('')
+		// fetch departments
+		$.get(ENDPOINTS.departments)
+			.done((departments) => {
+				const departmentMap = departments.reduce((map, dept) => {
+					map[dept.departmentId] = dept.departmentName
+					return map
+				}, {})
 
-				$('#studentsTableBody').html(rows)
+				// fetch and display students
+				$.get(ENDPOINTS.formdata)
+					.done((formData) => {
+						const rows = formData
+							.map(
+								(student) => `
+                    <tr>
+                        <td>${student.dataId}</td>
+                        <td>${student.fieldValue1}</td>
+                        <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
+                        <td>${student.fieldValue5}</td>
+                        <td>${student.fieldValue6}</td>
+                        <td>${student.fieldValue7}</td>
+                        <td>${student.fieldValue8}</td>
+                        <td>${student.fieldValue9}</td>
+                        <td>${departmentMap[student.fieldValue10]}</td>
+                        <td>${student.fieldValue11}</td>
+                        <td>${student.fieldValue12}</td>
+                        <td>${student.fieldValue13}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </td>
+                        
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `
+							)
+							.join('')
+
+						$('#studentsTableBody').html(rows)
+					})
+					.fail(handleError)
 			})
 			.fail(handleError)
 	}
-
 	function loadAdmins() {
 		$.get(ENDPOINTS.admins)
 			.done((admins) => {
@@ -213,39 +224,42 @@ $(document).ready(function () {
 		this.value = this.value.replace(/[^0-9]/g, '')
 	})
 
-	window.editStudent = function (id) {
-		// Fetch student data by ID
-		$.get(`${ENDPOINTS.formdata}/${id}`)
-			.done((student) => {
-				// Populate the form with student data
-				$('#addStudentForm').find('[name="fieldValue1"]').val(student.fieldValue1)
-				$('#addStudentForm').find('[name="fieldValue2"]').val(student.fieldValue2)
-				$('#addStudentForm').find('[name="fieldValue3"]').val(student.fieldValue3)
-				$('#addStudentForm').find('[name="fieldValue4"]').val(student.fieldValue4)
-				$('#addStudentForm').find('[name="fieldValue5"]').val(student.fieldValue5)
-				$('#addStudentForm').find('[name="fieldValue6"]').val(student.fieldValue6)
-				$('#addStudentForm').find('[name="fieldValue7"]').val(student.fieldValue7)
-				$('#addStudentForm').find('[name="fieldValue8"]').val(student.fieldValue8)
-				$('#addStudentForm').find('[name="fieldValue9"]').val(student.fieldValue9)
-				$('#addStudentForm').find('[name="fieldValue10"]').val(student.fieldValue10)
-				$('#addStudentForm').find('[name="fieldValue11"]').val(student.fieldValue11)
-				$('#addStudentForm').find('[name="fieldValue12"]').val(student.fieldValue12)
-				$('#addStudentForm').find('[name="fieldValue13"]').val(student.fieldValue13)
-				$('#addStudentForm').find('[name="fieldValue14"]').val(student.fieldValue14)
-				$('#addStudentForm').find('[name="fieldValue15"]').val(student.fieldValue15)
-				// Show the modal
-				$('#addStudentModal').modal('show')
+	window.editStudent = function (dataId) {
+		// load departments
+		$.get(ENDPOINTS.departments)
+			.done((departments) => {
+				const options = departments
+					.map((dept) => `<option value="${dept.departmentId}">${dept.departmentName}</option>`)
+					.join('')
+				$('#editStudentForm select[name="departmentId"]').html('<option value="">Choose...</option>' + options)
 
-				// Update the save button to handle update instead of create
-				$('#saveStudentBtn')
-					.off('click')
-					.click(() => handleUpdateStudent(id))
+				// populate student data
+				$.get(`${ENDPOINTS.formdata}/${dataId}`)
+					.done((student) => {
+						// Populate the edit form
+						$('#editDataId').val(student.dataId)
+						$('#editStudentForm [name="firstName"]').val(student.fieldValue2)
+						$('#editStudentForm [name="lastName"]').val(student.fieldValue3)
+						$('#editStudentForm [name="fathersName"]').val(student.fieldValue4)
+						$('#editStudentForm [name="email"]').val(student.fieldValue5)
+						$('#editStudentForm [name="gender"]').val(student.fieldValue6)
+						$('#editStudentForm [name="dateOfBirth"]').val(student.fieldValue7)
+						$('#editStudentForm [name="address"]').val(student.fieldValue8)
+						$('#editStudentForm [name="phoneNumber"]').val(student.fieldValue9)
+						$('#editStudentForm [name="departmentId"]').val(student.fieldValue10)
+						$('#editStudentForm [name="batchYear"]').val(student.fieldValue11)
+						$('#editStudentForm [name="currentSemester"]').val(student.fieldValue12)
+						$('#editStudentForm [name="shift"]').val(student.fieldValue13)
+
+						$('#editStudentModal').modal('show')
+					})
+					.fail(handleError)
 			})
 			.fail(handleError)
 	}
 
-	function handleUpdateStudent(id) {
-		const form = $('#addStudentForm')[0]
+	function handleStudentUpdate() {
+		const form = $('#editStudentForm')[0]
 		if (!form.checkValidity()) {
 			form.classList.add('was-validated')
 			return
@@ -253,14 +267,15 @@ $(document).ready(function () {
 
 		const formData = new FormData(form)
 		const studentData = Object.fromEntries(formData.entries())
+		const dataId = studentData.dataId
 
 		$.ajax({
-			url: `${ENDPOINTS.formdata}/${id}`,
+			url: `${ENDPOINTS.formdata}/${dataId}`,
 			method: 'PUT',
 			contentType: 'application/json',
 			data: JSON.stringify(studentData),
 			success: function (response) {
-				$('#addStudentModal').modal('hide')
+				$('#editStudentModal').modal('hide')
 				form.reset()
 				loadStudents()
 				showAlert('Success', 'Student updated successfully!', 'success')
@@ -268,6 +283,9 @@ $(document).ready(function () {
 			error: handleError,
 		})
 	}
+
+	// Add event listener for update button
+	$('#updateStudentBtn').click(handleStudentUpdate)
 
 	window.deleteStudent = function (id) {
 		if (confirm('Are you sure you want to delete this student?')) {
@@ -282,20 +300,6 @@ $(document).ready(function () {
 			})
 		}
 	}
-
-	// function deleteAdmin(id) {
-	// 	if (confirm('Are you sure you want to delete this administrator?')) {
-	// 		$.ajax({
-	// 			url: `${ENDPOINTS.admins}/${id}`,
-	// 			method: 'DELETE',
-	// 			success: function () {
-	// 				loadAdmins()
-	// 				showAlert('Success', 'Administrator deleted successfully!', 'success')
-	// 			},
-	// 			error: handleError,
-	// 		})
-	// 	}
-	// }
 
 	function handleError(xhr) {
 		const message = xhr.responseJSON?.error || 'An error occurred. Please try again.'

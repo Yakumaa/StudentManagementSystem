@@ -69,6 +69,7 @@
 									<th>Date of Birth</th>
 									<th>Address</th>
 									<th>Phone Number</th>
+									<th>Department</th>
 									<th>Batch Year</th>
 									<th>Current Semester</th>
 									<th>Shift</th>
@@ -193,6 +194,92 @@
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 						<button type="button" class="btn btn-primary" id="saveStudentBtn">Save</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Edit Student Modal -->
+		<div class="modal fade" id="editStudentModal">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Edit Student</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<form id="editStudentForm" class="needs-validation" novalidate>
+							<input type="hidden" name="dataId" id="editDataId" />
+							<input type="hidden" name="templateId" value="1" />
+							<div class="row g-3">
+								<!-- Personal Information -->
+								<div class="col-md-6">
+									<label class="form-label">First Name</label>
+									<input type="text" class="form-control" name="firstName" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Last Name</label>
+									<input type="text" class="form-control" name="lastName" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Father's Name</label>
+									<input type="text" class="form-control" name="fathersName" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Email</label>
+									<input type="email" class="form-control" name="email" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Gender</label>
+									<select class="form-select" name="gender" required>
+										<option value="">Choose...</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+										<option value="Other">Other</option>
+									</select>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Date of Birth</label>
+									<input type="date" class="form-control" name="dateOfBirth" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Phone Number</label>
+									<input type="text" class="form-control" name="phoneNumber" required />
+								</div>
+								<div class="col-12">
+									<label class="form-label">Address</label>
+									<input type="text" class="form-control" name="address" required />
+								</div>
+
+								<!-- Academic Information -->
+								<div class="col-md-6">
+									<label class="form-label">Department</label>
+									<select class="form-select" name="departmentId" required>
+										<option value="">Choose...</option>
+									</select>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Batch Year</label>
+									<input type="number" class="form-control" name="batchYear" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Current Semester</label>
+									<input type="number" class="form-control" name="currentSemester" min="1" max="8" required />
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Shift</label>
+									<select class="form-select" name="shift" required>
+										<option value="">Choose...</option>
+										<option value="Morning">Morning</option>
+										<option value="Day">Day</option>
+									</select>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="updateStudentBtn">Update Student</button>
 					</div>
 				</div>
 			</div>
