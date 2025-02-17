@@ -6,7 +6,7 @@ $(document).ready(function () {
 	const API_URL = 'http://localhost:3000/api'
 	const ENDPOINTS = {
 		students: `${API_URL}/students`,
-		admins: `${API_URL}/admins`,
+		admins: `${API_URL}/users`,
 		departments: `${API_URL}/departments`,
 		formdata: `${API_URL}/form-data`,
 	}
@@ -111,16 +111,10 @@ $(document).ready(function () {
 					.map(
 						(admin) => `
                   <tr>
-                      <td>${admin.adminId}</td>
-                      <td>${admin.name}</td>
+                      <td>${admin.userId}</td>
+                      <td>${admin.username}</td>
                       <td>${admin.email}</td>
-                      <td>${admin.contactNumber}</td>
-
-                      <td>
-                          <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.adminId})">
-                              <i class="bi bi-trash"></i>
-                          </button>
-                      </td>
+                      <td>${admin.userTypeID === 1 ? 'Admin' : 'Normal'}</td>
                   </tr>
               `
 					)
@@ -295,6 +289,20 @@ $(document).ready(function () {
 				success: function () {
 					loadStudents()
 					showAlert('Success', 'Student deleted successfully!', 'success')
+				},
+				error: handleError,
+			})
+		}
+	}
+
+	window.deleteAdmin = function (id) {
+		if (confirm('Are you sure you want to delete this administrator?')) {
+			$.ajax({
+				url: `${ENDPOINTS.admins}/${id}`,
+				method: 'DELETE',
+				success: function () {
+					loadAdmins()
+					showAlert('Success', 'Administrator deleted successfully!', 'success')
 				},
 				error: handleError,
 			})

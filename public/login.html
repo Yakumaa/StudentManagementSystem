@@ -24,23 +24,21 @@
 								<div class="mb-3">
 									<label for="email" class="form-label">Email</label>
 									<input type="email" class="form-control" id="email" required />
+									<div class="invalid-feedback">Please enter a valid email address.</div>
 								</div>
 								<div class="mb-3">
 									<label for="password" class="form-label">Password</label>
 									<input type="password" class="form-control" id="password" required />
-								</div>
-								<div class="mb-3">
-									<label for="userType" class="form-label">User Type</label>
-									<select class="form-select" id="userType" required>
-										<option value="student">Student</option>
-										<option value="admin">Admin</option>
-									</select>
+									<div class="invalid-feedback">Password is required.</div>
 								</div>
 								<div class="d-grid">
 									<button type="submit" class="btn btn-primary">Login</button>
 								</div>
 								<div id="errorMessage" class="alert alert-danger mt-3" style="display: none"></div>
 							</form>
+							<div class="text-center mt-3">
+								<p>Don't have an account? <a href="register.html">Register here</a></p>
+							</div>
 						</div>
 					</div>
 				</div>

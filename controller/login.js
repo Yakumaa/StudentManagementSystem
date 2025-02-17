@@ -1,29 +1,62 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const config = require('../utils/config')
 const loginRouter = require('express').Router()
-const Admin = require('../models/Admin')
-const Student = require('../models/Student')
+const User = require('../models/User')
+const UserType = require('../models/UserType')
+// const defineAssociations = require('../models/associations')
+
+// defineAssociations()
 
 loginRouter.post('/', async (req, res) => {
-	const { email, password, userType } = req.body
-	const Model = userType === 'admin' ? Admin : Student
+	const { email, password } = req.body
+	console.log(email, password)
 
 	try {
-		const user = await Model.findOne({ where: { email } })
-		console.log('user', user)
-		if (!user) throw new Error('User not found')
-
-		const passwordMatch = await bcrypt.compare(password, user.password)
-		if (!passwordMatch) throw new Error('Password is incorrect')
-
-		const token = jwt.sign({ id: user.adminId || user.studentId, email: user.email, userType }, process.env.SECRET, {
-			expiresIn: '24h',
+		const user = await User.findOne({
+			where: { email },
 		})
-		console.log('token', token)
-		res.json({ token, user: { id: user.adminId || user.studentId, email: user.email, name: user.name, userType } })
+
+		console.log(user)
+
+		if (!user) {
+			throw new Error('Invalid email or password')
+		}
+
+		const passwordMatch = await bcrypt.compare(password, user.passwordHash)
+		if (!passwordMatch) {
+			throw new Error('Invalid password')
+		}
+
+		const userType = user.userTypeID
+		console.log(userType)
+
+		// Create token with user information
+		const token = jwt.sign(
+			{
+				id: user.userId,
+				email: user.email,
+				userType,
+				username: user.username,
+			},
+			process.env.SECRET,
+			{
+				expiresIn: '24h',
+			}
+		)
+
+		res.json({
+			token,
+			user: {
+				id: user.userId,
+				email: user.email,
+				username: user.username,
+				userType,
+			},
+		})
 	} catch (error) {
-		res.status(401).json({ error: error.message })
+		res.status(401).json({
+			error: 'Invalid email or password',
+		})
 	}
 })
 

@@ -26,10 +26,9 @@ const User = sequelize.define(
 		userTypeID: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
-			// References your UserTypes table; adjust the model name if needed.
 			references: {
 				model: 'UserTypes',
-				key: 'typeID',
+				key: 'TypeID',
 			},
 		},
 		// createdAt: {

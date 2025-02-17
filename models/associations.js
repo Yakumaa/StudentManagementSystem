@@ -7,6 +7,7 @@ const FormField = require('./FormField')
 const FormData = require('./FormData')
 const Form = require('./Form')
 const User = require('./User')
+const UserType = require('./UserType')
 
 const defineAssociations = () => {
 	// Department - Student associations
@@ -77,6 +78,11 @@ const defineAssociations = () => {
 	User.hasMany(Form, {
 		foreignKey: 'submittedBy',
 		as: 'forms',
+	})
+
+	User.belongsTo(UserType, {
+		foreignKey: 'userTypeID',
+		as: 'type',
 	})
 
 	// FormData.belongsTo(Student, {

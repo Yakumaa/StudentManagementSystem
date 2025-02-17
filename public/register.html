@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>User Registration</title>
+		<!-- Bootstrap CSS -->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+		<!-- jQuery -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<!-- Bootstrap JS -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<!-- Custom JS -->
+		<script src="register.js"></script>
+		<style>
+			.password-toggle {
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body class="bg-light">
+		<div class="container">
+			<div class="row justify-content-center mt-5">
+				<div class="col-md-6">
+					<div class="card shadow">
+						<div class="card-body">
+							<h2 class="text-center mb-4">Create Account</h2>
+
+							<form id="registrationForm">
+								<div class="mb-3">
+									<label for="username" class="form-label">Username</label>
+									<input type="text" class="form-control" id="username" name="username" required />
+									<div class="invalid-feedback">Please choose a username.</div>
+								</div>
+
+								<div class="mb-3">
+									<label for="email" class="form-label">Email address</label>
+									<input type="email" class="form-control" id="email" name="email" required />
+									<div class="invalid-feedback">Please enter a valid email address.</div>
+								</div>
+
+								<div class="mb-3">
+									<label for="passwordHash" class="form-label">Password</label>
+									<div class="input-group">
+										<input type="password" class="form-control" id="passwordHash" name="passwordHash" required />
+									</div>
+								</div>
+
+								<div class="mb-3">
+									<label for="confirmPassword" class="form-label">Confirm Password</label>
+									<div class="input-group">
+										<input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+									</div>
+									<div class="invalid-feedback">Passwords do not match.</div>
+								</div>
+
+								<div class="mb-4">
+									<label for="userTypeID" class="form-label">Account Type</label>
+									<select class="form-select" id="userTypeID" name="userTypeID" required>
+										<option value="">Select account type</option>
+										<option value="2">Normal User</option>
+										<option value="1">Administrator</option>
+									</select>
+									<div class="invalid-feedback">Please select an account type.</div>
+								</div>
+
+								<div class="d-grid">
+									<button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
+								</div>
+							</form>
+
+							<div class="text-center mt-3">
+								<p>Already have an account? <a href="login.html">Login here</a></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
