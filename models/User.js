@@ -36,18 +36,20 @@ const User = sequelize.define(
 			defaultValue: 1,
 			field: 'isActive',
 		},
-		// createdAt: {
-		// 	type: DataTypes.DATE,
-		// 	defaultValue: DataTypes.NOW,
-		// },
-		// updatedAt: {
-		// 	type: DataTypes.DATE,
-		// 	defaultValue: DataTypes.NOW,
-		// },
+		createdAt: {
+			type: DataTypes.DATE,
+			defaultValue: sequelize.literal('GETDATE()'), // Use SQL Server's GETDATE()
+			field: 'createdAt',
+		},
+		updatedAt: {
+			type: DataTypes.DATE,
+			defaultValue: sequelize.literal('GETDATE()'), // Use SQL Server's GETDATE()
+			field: 'updatedAt',
+		},
 	},
 	{
 		tableName: 'Users',
-		timestamps: false,
+		timestamps: true,
 	}
 )
 

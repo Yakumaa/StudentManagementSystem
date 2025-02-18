@@ -47,7 +47,6 @@ userRouter.put('/:id', async (req, res) => {
 	}
 })
 
-//TODO: add isActive column in user table
 userRouter.delete('/:id', async (req, res) => {
 	try {
 		await User.update(

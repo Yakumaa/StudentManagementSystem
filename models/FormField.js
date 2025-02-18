@@ -58,13 +58,13 @@ const FormField = sequelize.define(
 		},
 		createdAt: {
 			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
+			defaultValue: sequelize.literal('GETDATE()'),
 			field: 'CreatedAt',
 		},
 	},
 	{
 		tableName: 'FormFields',
-		timestamps: false,
+		timestamps: true,
 	}
 )
 

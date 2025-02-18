@@ -26,18 +26,18 @@ const FormTemplate = sequelize.define(
 		},
 		createdAt: {
 			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
+			defaultValue: sequelize.literal('GETDATE()'),
 			field: 'CreatedAt',
 		},
 		updatedAt: {
 			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
+			defaultValue: sequelize.literal('GETDATE()'),
 			field: 'UpdatedAt',
 		},
 	},
 	{
 		tableName: 'FormTemplates',
-		timestamps: false,
+		timestamps: true,
 	}
 )
 

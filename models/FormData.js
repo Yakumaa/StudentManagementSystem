@@ -202,20 +202,20 @@ const FormData = sequelize.define(
 			defaultValue: 1,
 			field: 'IsActive',
 		},
-		// createdAt: {
-		// 	type: DataTypes.DATE,
-		// 	defaultValue: DataTypes.NOW,
-		// 	field: 'CreatedAt',
-		// },
-		// updatedAt: {
-		// 	type: DataTypes.DATE,
-		// 	defaultValue: DataTypes.NOW,
-		// 	field: 'UpdatedAt',
-		// },
+		createdAt: {
+			type: DataTypes.DATE,
+			defaultValue: sequelize.literal('GETDATE()'),
+			field: 'CreatedAt',
+		},
+		updatedAt: {
+			type: DataTypes.DATE,
+			defaultValue: sequelize.literal('GETDATE()'),
+			field: 'UpdatedAt',
+		},
 	},
 	{
 		tableName: 'FormData',
-		timestamps: false,
+		timestamps: true,
 	}
 )
 
