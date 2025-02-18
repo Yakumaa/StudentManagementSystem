@@ -31,6 +31,11 @@ const User = sequelize.define(
 				key: 'TypeID',
 			},
 		},
+		isActive: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: 1,
+			field: 'isActive',
+		},
 		// createdAt: {
 		// 	type: DataTypes.DATE,
 		// 	defaultValue: DataTypes.NOW,

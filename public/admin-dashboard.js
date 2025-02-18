@@ -5,7 +5,6 @@ $(document).ready(function () {
 	// Constants
 	const API_URL = 'http://localhost:3000/api'
 	const ENDPOINTS = {
-		students: `${API_URL}/students`,
 		admins: `${API_URL}/users`,
 		departments: `${API_URL}/departments`,
 		formdata: `${API_URL}/form-data`,
@@ -104,6 +103,7 @@ $(document).ready(function () {
 			})
 			.fail(handleError)
 	}
+
 	function loadAdmins() {
 		$.get(ENDPOINTS.admins)
 			.done((admins) => {
@@ -115,6 +115,17 @@ $(document).ready(function () {
                       <td>${admin.username}</td>
                       <td>${admin.email}</td>
                       <td>${admin.userTypeID === 1 ? 'Admin' : 'Normal'}</td>
+                      <td>
+                      <span>
+                        <button class="btn btn-sm btn-primary" onclick="editAdmin(${admin.userId})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                      
+                        <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.userId})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        </span>
+                      </td>
                   </tr>
               `
 					)
@@ -261,6 +272,7 @@ $(document).ready(function () {
 
 		const formData = new FormData(form)
 		const studentData = Object.fromEntries(formData.entries())
+		console.log('studentData', studentData)
 		const dataId = studentData.dataId
 
 		$.ajax({
@@ -280,6 +292,53 @@ $(document).ready(function () {
 
 	// Add event listener for update button
 	$('#updateStudentBtn').click(handleStudentUpdate)
+
+	window.editAdmin = function (userId) {
+		$.get(`${ENDPOINTS.admins}/${userId}`)
+			.done((user) => {
+				// Populate the edit form
+				$('#editUserId').val(user.userId)
+				$('#editAdminForm [name="username"]').val(user.username)
+				$('#editAdminForm [name="email"]').val(user.email)
+				$('#editAdminForm [name="userTypeID"]').val(user.userTypeID)
+
+				$('#editAdminModal').modal('show')
+			})
+			.fail(handleError)
+	}
+
+	function handleAdminUpdate() {
+		const form = $('#editAdminForm')[0]
+		if (!form.checkValidity()) {
+			form.classList.add('was-validated')
+			return
+		}
+
+		const userData = {
+			userId: $('#editUserId').val(),
+			username: $('#editAdminForm [name="username"]').val(),
+			email: $('#editAdminForm [name="email"]').val(),
+			userTypeID: $('#editAdminForm [name="userTypeID"]').val(),
+		}
+
+		console.log('userData', userData)
+
+		$.ajax({
+			url: `${ENDPOINTS.admins}/${userData.userId}`,
+			method: 'PUT',
+			contentType: 'application/json',
+			data: JSON.stringify(userData),
+			success: function (response) {
+				$('#editAdminModal').modal('hide')
+				form.reset()
+				loadAdmins()
+				showAlert('Success', 'User updated successfully!', 'success')
+			},
+			error: handleError,
+		})
+	}
+
+	$('#updateAdminBtn').click(handleAdminUpdate)
 
 	window.deleteStudent = function (id) {
 		if (confirm('Are you sure you want to delete this student?')) {

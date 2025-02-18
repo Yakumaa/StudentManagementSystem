@@ -32,7 +32,7 @@
 							<a class="nav-link active" href="#" data-section="students">Students</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#" data-section="admins">Admins</a>
+							<a class="nav-link" href="#" data-section="admins">Users</a>
 						</li>
 					</ul>
 					<ul class="navbar-nav ms-auto">
@@ -84,9 +84,9 @@
 				<!-- Admins Section -->
 				<div id="adminsSection" style="display: none">
 					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h2>Administrators</h2>
+						<h2>Users</h2>
 						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
-							<i class="bi bi-plus-circle"></i> Add Admin
+							<i class="bi bi-plus-circle"></i> Add Users
 						</button>
 					</div>
 					<div class="table-responsive">
@@ -97,7 +97,7 @@
 									<th>Name</th>
 									<th>Email</th>
 									<th>Type</th>
-									<!-- <th>Actions</th> -->
+									<th>Actions</th>
 								</tr>
 							</thead>
 							<tbody id="adminsTableBody"></tbody>
@@ -290,28 +290,78 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title">Add New Administrator</h5>
+						<h5 class="modal-title">Add New User</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 					</div>
 					<div class="modal-body">
 						<form id="addAdminForm">
 							<div class="mb-3">
-								<label class="form-label">Name</label>
-								<input type="text" class="form-control" name="name" required />
+								<label class="form-label">Username</label>
+								<input type="text" class="form-control" name="username" required />
 							</div>
+
 							<div class="mb-3">
 								<label class="form-label">Email</label>
 								<input type="email" class="form-control" name="email" required />
 							</div>
+
 							<div class="mb-3">
 								<label class="form-label">Password</label>
-								<input type="password" class="form-control" name="password" required />
+								<input type="password" class="form-control" name="passwordHash" required />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">Account Type</label>
+								<select class="form-select" name="userTypeID" required>
+									<option value="">Select account type</option>
+									<option value="2">Normal User</option>
+									<option value="1">Administrator</option>
+								</select>
 							</div>
 						</form>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 						<button type="button" class="btn btn-primary" id="saveAdminBtn">Save</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Edit Admin Modal -->
+		<div class="modal fade" id="editAdminModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Edit User</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<form id="editAdminForm">
+							<input type="hidden" name="userId" id="editUserId" />
+							<div class="mb-3">
+								<label class="form-label">Username</label>
+								<input type="text" class="form-control" name="username" required />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">Email</label>
+								<input type="email" class="form-control" name="email" required />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">Account Type</label>
+								<select class="form-select" name="userTypeID" required>
+									<option value="">Select account type</option>
+									<option value="2">Normal User</option>
+									<option value="1">Administrator</option>
+								</select>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="updateAdminBtn">Update User</button>
 					</div>
 				</div>
 			</div>

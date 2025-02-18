@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 
 userRouter.get('/', async (req, res) => {
 	try {
-		const users = await User.findAll({})
+		const users = await User.findAll({ where: { isActive: 1 } })
 		res.json(users)
 	} catch (error) {
 		res.status(500).json({ error: error.message })
@@ -35,24 +35,27 @@ userRouter.post('/', async (req, res) => {
 	}
 })
 
-// userRouter.put('/:id', async (req, res) => {
-//   try {
-//     const updatedUser = await User.update(req.body, {
-//       where: { userId: req.params.id },
-//       returning: true,
-//     })
-//     res.json(updatedUser[1][0])
-//   } catch (error) {
-//     res.status(400).json({ error: error.message })
-//   }
-// })
+userRouter.put('/:id', async (req, res) => {
+	try {
+		const updatedUser = await User.update(req.body, {
+			where: { userId: req.params.id },
+			returning: true,
+		})
+		res.json(updatedUser[1][0])
+	} catch (error) {
+		res.status(400).json({ error: error.message })
+	}
+})
 
 //TODO: add isActive column in user table
 userRouter.delete('/:id', async (req, res) => {
 	try {
-		await User.destroy({
-			where: { userId: req.params.id },
-		})
+		await User.update(
+			{ isActive: 0 },
+			{
+				where: { userId: req.params.id },
+			}
+		)
 		res.status(204).end()
 	} catch (error) {
 		res.status(400).json({ error: error.message })

@@ -31,136 +31,6 @@ formDataRouter.get('/:id', async (req, res) => {
 	}
 })
 
-// formDataRouter.post('/', async (req, res) => {
-// 	console.log(req.body)
-// 	try {
-// 		const {
-// 			templateId,
-// 			registrationNumber,
-// 			firstName,
-// 			lastName,
-// 			fathersName,
-// 			email,
-// 			gender,
-// 			dateOfBirth,
-// 			address,
-// 			phoneNumber,
-// 			departmentId,
-// 			batchYear,
-// 			currentSemester,
-// 			shift,
-// 			profilePicture,
-// 			attendance,
-// 		} = req.body
-
-// 		// Ensure that required fields are provided
-// 		if (!templateId || !registrationNumber || !firstName || !lastName) {
-// 			return res.status(400).json({ error: 'Missing required fields' })
-// 		}
-
-// 		// Insert form data
-// 		await FormData.create({
-// 			templateId,
-// 			fieldValue1: registrationNumber,
-// 			fieldValue2: firstName,
-// 			fieldValue3: lastName,
-// 			fieldValue4: fathersName,
-// 			fieldValue5: email,
-// 			fieldValue6: gender,
-// 			fieldValue7: dateOfBirth,
-// 			fieldValue8: address,
-// 			fieldValue9: phoneNumber,
-// 			fieldValue10: departmentId,
-// 			fieldValue11: batchYear,
-// 			fieldValue12: currentSemester,
-// 			fieldValue13: shift,
-// 			fieldValue14: profilePicture || null,
-// 			fieldValue15: attendance,
-// 		})
-
-// 		res.status(201).json({ message: 'Form data submitted successfully' })
-// 	} catch (error) {
-// 		res.status(400).json({ error: error.message })
-// 	}
-// })
-
-// formDataRouter.post('/', async (req, res) => {
-// 	const {
-// 		templateId,
-// 		registrationNumber,
-// 		firstName,
-// 		lastName,
-// 		fathersName,
-// 		email,
-// 		gender,
-// 		dateOfBirth,
-// 		address,
-// 		phoneNumber,
-// 		departmentId,
-// 		batchYear,
-// 		currentSemester,
-// 		shift,
-// 		profilePicture,
-// 		attendance,
-// 	} = req.body
-
-// 	console.log('Received templateId:', templateId)
-
-// 	// Begin transaction
-// 	const t = await sequelize.transaction()
-
-// 	try {
-// 		//Insert into Form table to create a form submission record
-// 		const form = await Form.create(
-// 			{
-// 				templateId: templateId,
-// 				submittedBy: 'admin', //TODO: Change this to the logged-in user
-// 				submittedAt: new Date(),
-// 			},
-// 			{ transaction: t }
-// 		)
-
-// 		// console.log(form)
-
-// 		// Retrieve the generated FormID
-// 		const formId = form.dataValues.formId
-// 		console.log('Generated FormID:', formId)
-
-// 		// Insert into FormData table using the generated FormID
-// 		await FormData.create(
-// 			{
-// 				templateId: templateId,
-// 				formId: formId, // Link to the Form record
-// 				fieldValue1: registrationNumber,
-// 				fieldValue2: firstName,
-// 				fieldValue3: lastName,
-// 				fieldValue4: fathersName,
-// 				fieldValue5: email,
-// 				fieldValue6: gender,
-// 				fieldValue7: dateOfBirth,
-// 				fieldValue8: address,
-// 				fieldValue9: phoneNumber,
-// 				fieldValue10: departmentId,
-// 				fieldValue11: batchYear,
-// 				fieldValue12: currentSemester,
-// 				fieldValue13: shift,
-// 				fieldValue14: profilePicture || null,
-// 				fieldValue15: attendance,
-// 			},
-// 			{ transaction: t }
-// 		)
-
-// 		// Commit transaction if both inserts succeed
-// 		await t.commit()
-
-// 		res.status(201).json({ message: 'Form submitted successfully' })
-// 	} catch (error) {
-// 		// Roll back transaction on error
-// 		await t.rollback()
-// 		res.status(500).json({ error: error.message })
-// 	}
-// })
-
 formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 	console.log('user', req.user.id)
 	const loggedInUserId = req.user.id
@@ -169,7 +39,7 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 		const form = await Form.create(
 			{
 				templateId: req.body.templateId,
-				submittedBy: loggedInUserId, // TODO: Replace with logged-in user's ID
+				submittedBy: loggedInUserId,
 				submittedAt: new Date(),
 			},
 			{ transaction: t }
