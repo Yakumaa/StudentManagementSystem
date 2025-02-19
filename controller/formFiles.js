@@ -27,7 +27,7 @@ formFilesRouter.get('/:id', async (req, res) => {
 
 formFilesRouter.post('/', async (req, res) => {
 	try {
-		console.log(req.body)
+		console.log('Received payload:', req.body)
 		const { FormID, FileName, FileData, FileType, FileSize } = req.body
 
 		// Validate required fields

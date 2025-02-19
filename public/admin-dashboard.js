@@ -161,12 +161,44 @@ $(document).ready(function () {
 			studentData.registrationNumber = generateRegistrationNumber()
 		}
 
+		// Handle profile picture
+		const profilePicture = form.querySelector('input[name="profilePicture"]').files[0]
+		const academicDocs = form.querySelector('input[name="academicDocs"]').files[0]
+
+		if (profilePicture) {
+			if (profilePicture.size > 5 * 1024 * 1024) {
+				// 5MB limit
+				showAlert('Error', 'Profile picture must be less than 5MB', 'danger')
+				return
+			}
+		}
+
+		if (academicDocs) {
+			if (academicDocs.size > 10 * 1024 * 1024) {
+				// 10MB limit
+				showAlert('Error', 'Academic documents must be less than 10MB', 'danger')
+				return
+			}
+		}
+
 		$.ajax({
 			url: ENDPOINTS.formdata,
 			method: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify(studentData),
 			success: function (response) {
+				// After student is created, upload files
+				const formId = response.formId // Assuming this is returned from your API
+				console.log('formId', formId)
+				// Upload profile picture
+				if (profilePicture) {
+					uploadFile(formId, profilePicture, 'image')
+				}
+
+				// Upload academic documents
+				if (academicDocs) {
+					uploadFile(formId, academicDocs, 'pdf')
+				}
 				$('#addStudentModal').modal('hide')
 				form.reset()
 				loadStudents()
@@ -175,6 +207,70 @@ $(document).ready(function () {
 			error: handleError,
 		})
 	}
+
+	function uploadFile(formId, file, fileType) {
+		const reader = new FileReader()
+
+		reader.onload = function (e) {
+			console.log('FileReader result:', e.target.result)
+			const base64Data = e.target.result.split(',')[1] // Remove data URL prefix
+
+			const fileData = {
+				FormID: formId,
+				FileName: file.name,
+				FileData: base64Data,
+				FileType: file.type,
+				FileSize: file.size,
+			}
+
+			$.ajax({
+				url: `${API_URL}/form-files`,
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(fileData),
+				success: function (response) {
+					console.log(`${fileType} uploaded successfully`)
+				},
+				error: function (xhr) {
+					handleError(xhr)
+					showAlert('Error', `Failed to upload ${fileType}`, 'danger')
+				},
+			})
+		}
+
+		reader.readAsDataURL(file)
+	}
+
+	// Add file validation on input change
+	$('input[name="profilePicture"]').on('change', function () {
+		const file = this.files[0]
+		if (file) {
+			if (!file.type.startsWith('image/')) {
+				showAlert('Error', 'Please select a valid image file', 'danger')
+				this.value = ''
+				return
+			}
+			if (file.size > 5 * 1024 * 1024) {
+				showAlert('Error', 'Profile picture must be less than 5MB', 'danger')
+				this.value = ''
+			}
+		}
+	})
+
+	$('input[name="academicDocs"]').on('change', function () {
+		const file = this.files[0]
+		if (file) {
+			if (file.type !== 'application/pdf') {
+				showAlert('Error', 'Please select a PDF file', 'danger')
+				this.value = ''
+				return
+			}
+			if (file.size > 10 * 1024 * 1024) {
+				showAlert('Error', 'Academic documents must be less than 10MB', 'danger')
+				this.value = ''
+			}
+		}
+	})
 
 	function handleAdminSave() {
 		const formId = '#addAdminForm'
