@@ -28,16 +28,16 @@ const Form = sequelize.define(
 				key: 'userID',
 			},
 		},
-		submittedAt: {
-			type: DataTypes.DATE,
-			allowNull: true,
-			defaultValue: sequelize.literal('GETDATE()'),
-			field: 'SubmittedAt',
-		},
+		// submittedAt: {
+		// 	type: DataTypes.DATE,
+		// 	allowNull: true,
+		// 	defaultValue: sequelize.literal('GETDATE()'),
+		// 	field: 'SubmittedAt',
+		// },
 	},
 	{
 		tableName: 'Form',
-		timestamps: true,
+		timestamps: false,
 	}
 )
 

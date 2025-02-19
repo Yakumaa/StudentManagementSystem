@@ -8,6 +8,7 @@ const FormData = require('./FormData')
 const Form = require('./Form')
 const User = require('./User')
 const UserType = require('./UserType')
+const FormFile = require('./FormFile')
 
 const defineAssociations = () => {
 	// Department - Student associations
@@ -85,10 +86,15 @@ const defineAssociations = () => {
 		as: 'type',
 	})
 
-	// FormData.belongsTo(Student, {
-	// 	foreignKey: 'studentId',
-	// 	as: 'student',
-	// })
+	FormFile.belongsTo(Form, {
+		foreignKey: 'formId',
+		as: 'form',
+	})
+
+	Form.hasMany(FormFile, {
+		foreignKey: 'formId',
+		as: 'files',
+	})
 }
 
 module.exports = defineAssociations
