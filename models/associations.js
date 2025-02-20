@@ -61,6 +61,11 @@ const defineAssociations = () => {
 		as: 'template',
 	})
 
+	FormData.belongsTo(Form, {
+		foreignKey: 'formId',
+		as: 'form',
+	})
+
 	Form.hasMany(FormData, {
 		foreignKey: 'formId',
 		as: 'data',

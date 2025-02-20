@@ -19,7 +19,7 @@ formDataRouter.get('/', async (req, res) => {
 	}
 })
 
-formDataRouter.get('/:id', async (req, res) => {
+formDataRouter.get('/:id(\\d+)', async (req, res) => {
 	try {
 		const formData = await FormData.findByPk(req.params.id, {})
 		if (formData) {
@@ -27,6 +27,28 @@ formDataRouter.get('/:id', async (req, res) => {
 		} else {
 			res.status(404).end()
 		}
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+formDataRouter.get('/users', tokenExtractor, userExtractor, async (req, res) => {
+	console.log('user', req.user)
+	try {
+		const userFormData = await FormData.findAll({
+			where: {
+				isActive: 1,
+			},
+			include: [
+				{
+					model: Form,
+					as: 'form',
+					where: { submittedBy: req.user.id },
+					attributes: [],
+				},
+			],
+		})
+		res.json(userFormData)
 	} catch (error) {
 		res.status(500).json({ error: error.message })
 	}
