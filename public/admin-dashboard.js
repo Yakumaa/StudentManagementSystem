@@ -150,95 +150,66 @@ $(document).ready(function () {
 			return
 		}
 
-		console.log('form', form)
+		const formDataObj = Object.fromEntries(new FormData(form).entries())
+		console.log('formDataObj', formDataObj)
 
-		const formData = new FormData(form)
-		console.log('formData', formData)
-		const studentData = Object.fromEntries(formData.entries())
-		console.log('studentData', studentData)
-
-		if (!studentData.registrationNumber) {
-			studentData.registrationNumber = generateRegistrationNumber()
+		if (!formDataObj.registrationNumber) {
+			formDataObj.registrationNumber = generateRegistrationNumber()
 		}
 
-		// Handle profile picture
-		const profilePicture = form.querySelector('input[name="profilePicture"]').files[0]
-		const academicDocs = form.querySelector('input[name="academicDocs"]').files[0]
+		const profilePictureInput = form.querySelector('input[name="profilePicture"]')
+		const academicDocsInput = form.querySelector('input[name="academicDocs"]')
 
-		if (profilePicture) {
-			if (profilePicture.size > 5 * 1024 * 1024) {
-				// 5MB limit
-				showAlert('Error', 'Profile picture must be less than 5MB', 'danger')
-				return
-			}
-		}
-
-		if (academicDocs) {
-			if (academicDocs.size > 10 * 1024 * 1024) {
-				// 10MB limit
-				showAlert('Error', 'Academic documents must be less than 10MB', 'danger')
-				return
-			}
-		}
-
-		$.ajax({
-			url: ENDPOINTS.formdata,
-			method: 'POST',
-			contentType: 'application/json',
-			data: JSON.stringify(studentData),
-			success: function (response) {
-				// After student is created, upload files
-				const formId = response.formId // Assuming this is returned from your API
-				console.log('formId', formId)
-				// Upload profile picture
-				if (profilePicture) {
-					uploadFile(formId, profilePicture, 'image')
-				}
-
-				// Upload academic documents
-				if (academicDocs) {
-					uploadFile(formId, academicDocs, 'pdf')
-				}
-				$('#addStudentModal').modal('hide')
-				form.reset()
-				loadStudents()
-				showAlert('Success', 'Student added successfully!', 'success')
-			},
-			error: handleError,
-		})
-	}
-
-	function uploadFile(formId, file, fileType) {
-		const reader = new FileReader()
-
-		reader.onload = function (e) {
-			console.log('FileReader result:', e.target.result)
-			const base64Data = e.target.result.split(',')[1] // Remove data URL prefix
-
-			const fileData = {
-				FormID: formId,
-				FileName: file.name,
-				FileData: base64Data,
-				FileType: file.type,
-				FileSize: file.size,
-			}
-
-			$.ajax({
-				url: `${API_URL}/form-files`,
-				method: 'POST',
-				contentType: 'application/json',
-				data: JSON.stringify(fileData),
-				success: function (response) {
-					console.log(`${fileType} uploaded successfully`)
-				},
-				error: function (xhr) {
-					handleError(xhr)
-					showAlert('Error', `Failed to upload ${fileType}`, 'danger')
-				},
+		// convert a File object to Base64 string
+		function fileToBase64(file) {
+			return new Promise((resolve, reject) => {
+				if (!file) return resolve(null)
+				const reader = new FileReader()
+				reader.onload = () => resolve(reader.result.split(',')[1]) // Extract Base64 part
+				reader.onerror = reject
+				reader.readAsDataURL(file)
 			})
 		}
 
-		reader.readAsDataURL(file)
+		// Read the files (if present)
+		Promise.all([fileToBase64(profilePictureInput.files[0]), fileToBase64(academicDocsInput.files[0])])
+			.then(([profilePictureBase64, academicDocsBase64]) => {
+				// Attach file information to payload
+				if (profilePictureBase64) {
+					formDataObj.profilePicture = {
+						name: profilePictureInput.files[0].name,
+						data: profilePictureBase64,
+						type: profilePictureInput.files[0].type,
+						size: profilePictureInput.files[0].size,
+					}
+				}
+				if (academicDocsBase64) {
+					formDataObj.academicDocs = {
+						name: academicDocsInput.files[0].name,
+						data: academicDocsBase64,
+						type: academicDocsInput.files[0].type,
+						size: academicDocsInput.files[0].size,
+					}
+				}
+
+				$.ajax({
+					url: ENDPOINTS.formdata,
+					method: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify(formDataObj),
+					success: function (response) {
+						$('#addStudentModal').modal('hide')
+						form.reset()
+						loadStudents()
+						showAlert('Success', 'Student added successfully!', 'success')
+					},
+					error: handleError,
+				})
+			})
+			.catch((error) => {
+				showAlert('Error', 'Failed to read file data', 'danger')
+				console.error(error)
+			})
 	}
 
 	// Add file validation on input change
