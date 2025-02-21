@@ -1,4 +1,5 @@
 const FormData = require('../models/FormData')
+const FormDataHistory = require('../models/FormDataHistory')
 const Form = require('../models/Form')
 const FormFile = require('../models/FormFile')
 const sequelize = require('../utils/config')
@@ -7,6 +8,17 @@ const formDataRouter = require('express').Router()
 const { tokenExtractor, userExtractor } = require('../utils/middleware')
 
 defineAssociations()
+
+function formatLocalDate(date) {
+	const pad = (n) => n.toString().padStart(2, '0')
+	const year = date.getFullYear()
+	const month = pad(date.getMonth() + 1)
+	const day = pad(date.getDate())
+	const hours = pad(date.getHours())
+	const minutes = pad(date.getMinutes())
+	const seconds = pad(date.getSeconds())
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
 
 formDataRouter.get('/', async (req, res) => {
 	try {
@@ -112,31 +124,6 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 			// Save only the file name
 			academicDocsName = academicDocsRecord.fileName
 		}
-
-		// // Create the FormData record
-		// await FormData.create(
-		// 	{
-		// 		templateId: req.body.templateId,
-		// 		formId: formId,
-		// 		fieldValue1: req.body.registrationNumber,
-		// 		fieldValue2: req.body.firstName,
-		// 		fieldValue3: req.body.lastName,
-		// 		fieldValue4: req.body.fathersName,
-		// 		fieldValue5: req.body.email,
-		// 		fieldValue6: req.body.gender,
-		// 		fieldValue7: req.body.dateOfBirth,
-		// 		fieldValue8: req.body.address,
-		// 		fieldValue9: req.body.phoneNumber,
-		// 		fieldValue10: req.body.departmentId,
-		// 		fieldValue11: req.body.batchYear,
-		// 		fieldValue12: req.body.currentSemester,
-		// 		fieldValue13: req.body.shift,
-		// 		fieldValue14: profilePictureName || null,
-		// 		fieldValue15: req.body.attendance,
-		// 		fieldValue16: academicDocsName || null,
-		// 	},
-		// 	{ transaction: t }
-		// )
 
 		// Create the FormData record
 		const formDataRecord = await FormData.create(
@@ -261,43 +248,19 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 	}
 })
 
-// formDataRouter.put('/:id', async (req, res) => {
-// 	try {
-// 		const dataId = req.params.id
-// 		const updatedData = req.body
-
-// 		// Map the form fields to the correct fieldValue columns
-// 		const mappedData = {
-// 			fieldValue1: updatedData.registrationNumber,
-// 			fieldValue2: updatedData.firstName,
-// 			fieldValue3: updatedData.lastName,
-// 			fieldValue4: updatedData.fathersName,
-// 			fieldValue5: updatedData.email,
-// 			fieldValue6: updatedData.gender,
-// 			fieldValue7: updatedData.dateOfBirth,
-// 			fieldValue8: updatedData.address,
-// 			fieldValue9: updatedData.phoneNumber,
-// 			fieldValue10: updatedData.departmentId,
-// 			fieldValue11: updatedData.batchYear,
-// 			fieldValue12: updatedData.currentSemester,
-// 			fieldValue13: updatedData.shift,
-// 		}
-
-// 		await FormData.update(mappedData, {
-// 			where: { dataId: dataId },
-// 		})
-
-// 		res.json({ message: 'Record updated successfully' })
-// 	} catch (error) {
-// 		res.status(500).json({ error: error.message })
-// 	}
-// })
-
 formDataRouter.put('/:id', async (req, res) => {
-	const t = await sequelize.transaction()
+	let t
 	try {
+		t = await sequelize.transaction()
 		const dataId = req.params.id
 		const updatedData = req.body
+
+		// Fetch the current record before updating
+		const currentRecord = await FormData.findByPk(dataId, { transaction: t })
+		if (!currentRecord) {
+			await t.rollback()
+			return res.status(404).json({ error: 'Record not found' })
+		}
 
 		// Map the form fields to the correct fieldValue columns
 		const mappedData = {
@@ -330,101 +293,169 @@ formDataRouter.put('/:id', async (req, res) => {
 			return res.status(404).json({ error: 'Record not found' })
 		}
 
-		// Save the current state to history before updating
-		await sequelize.query(
-			`INSERT INTO FormDataHistory
-          (DataID, TemplateID, 
-           FieldValue1, FieldValue2, FieldValue3, FieldValue4, FieldValue5,
-           FieldValue6, FieldValue7, FieldValue8, FieldValue9, FieldValue10,
-           FieldValue11, FieldValue12, FieldValue13, FieldValue14, FieldValue15,
-           FieldValue16, FieldValue17, FieldValue18, FieldValue19, FieldValue20,
-           FieldValue21, FieldValue22, FieldValue23, FieldValue24, FieldValue25,
-           FieldValue26, FieldValue27, FieldValue28, FieldValue29, FieldValue30,
-           FieldValue31, FieldValue32, FieldValue33, FieldValue34, FieldValue35,
-           FieldValue36, FieldValue37, FieldValue38, FieldValue39, FieldValue40,
-           CreatedAt, UpdatedAt, isActive, FormID, ChangeType)
-          VALUES
-          (:dataId, :templateId,
-           :fieldValue1, :fieldValue2, :fieldValue3, :fieldValue4, :fieldValue5,
-           :fieldValue6, :fieldValue7, :fieldValue8, :fieldValue9, :fieldValue10,
-           :fieldValue11, :fieldValue12, :fieldValue13, :fieldValue14, :fieldValue15,
-           :fieldValue16, :fieldValue17, :fieldValue18, :fieldValue19, :fieldValue20,
-           :fieldValue21, :fieldValue22, :fieldValue23, :fieldValue24, :fieldValue25,
-           :fieldValue26, :fieldValue27, :fieldValue28, :fieldValue29, :fieldValue30,
-           :fieldValue31, :fieldValue32, :fieldValue33, :fieldValue34, :fieldValue35,
-           :fieldValue36, :fieldValue37, :fieldValue38, :fieldValue39, :fieldValue40,
-           :createdAt, :updatedAt, :isActive, :formId, 'UPDATE')`,
+		console.log('CreatedAt:', currentRecord.createdAt, typeof currentRecord.createdAt)
+		console.log('UpdatedAt:', updatedRecord.updatedAt, typeof updatedRecord.updatedAt)
+
+		// Create history record using the model
+		await FormDataHistory.create(
 			{
-				replacements: {
-					dataId: updatedRecord.dataId,
-					templateId: updatedRecord.templateId,
-					fieldValue1: updatedRecord.fieldValue1,
-					fieldValue2: updatedRecord.fieldValue2,
-					fieldValue3: updatedRecord.fieldValue3,
-					fieldValue4: updatedRecord.fieldValue4,
-					fieldValue5: updatedRecord.fieldValue5,
-					fieldValue6: updatedRecord.fieldValue6,
-					fieldValue7: updatedRecord.fieldValue7,
-					fieldValue8: updatedRecord.fieldValue8,
-					fieldValue9: updatedRecord.fieldValue9,
-					fieldValue10: updatedRecord.fieldValue10,
-					fieldValue11: updatedRecord.fieldValue11,
-					fieldValue12: updatedRecord.fieldValue12,
-					fieldValue13: updatedRecord.fieldValue13,
-					fieldValue14: updatedRecord.fieldValue14,
-					fieldValue15: updatedRecord.fieldValue15,
-					fieldValue16: updatedRecord.fieldValue16,
-					fieldValue17: updatedRecord.fieldValue17,
-					fieldValue18: updatedRecord.fieldValue18,
-					fieldValue19: updatedRecord.fieldValue19,
-					fieldValue20: updatedRecord.fieldValue20,
-					fieldValue21: updatedRecord.fieldValue21,
-					fieldValue22: updatedRecord.fieldValue22,
-					fieldValue23: updatedRecord.fieldValue23,
-					fieldValue24: updatedRecord.fieldValue24,
-					fieldValue25: updatedRecord.fieldValue25,
-					fieldValue26: updatedRecord.fieldValue26,
-					fieldValue27: updatedRecord.fieldValue27,
-					fieldValue28: updatedRecord.fieldValue28,
-					fieldValue29: updatedRecord.fieldValue29,
-					fieldValue30: updatedRecord.fieldValue30,
-					fieldValue31: updatedRecord.fieldValue31,
-					fieldValue32: updatedRecord.fieldValue32,
-					fieldValue33: updatedRecord.fieldValue33,
-					fieldValue34: updatedRecord.fieldValue34,
-					fieldValue35: updatedRecord.fieldValue35,
-					fieldValue36: updatedRecord.fieldValue36,
-					fieldValue37: updatedRecord.fieldValue37,
-					fieldValue38: updatedRecord.fieldValue38,
-					fieldValue39: updatedRecord.fieldValue39,
-					fieldValue40: updatedRecord.fieldValue40,
-					createdAt: updatedRecord.createdAt,
-					updatedAt: updatedRecord.updatedAt,
-					isActive: updatedRecord.isActive,
-					formId: updatedRecord.formId,
-				},
-				transaction: t,
-			}
+				dataId: updatedRecord.dataId,
+				templateId: updatedRecord.templateId,
+				fieldValue1: updatedRecord.fieldValue1,
+				fieldValue2: updatedRecord.fieldValue2,
+				fieldValue3: updatedRecord.fieldValue3,
+				fieldValue4: updatedRecord.fieldValue4,
+				fieldValue5: updatedRecord.fieldValue5,
+				fieldValue6: updatedRecord.fieldValue6,
+				fieldValue7: updatedRecord.fieldValue7,
+				fieldValue8: updatedRecord.fieldValue8,
+				fieldValue9: updatedRecord.fieldValue9,
+				fieldValue10: updatedRecord.fieldValue10,
+				fieldValue11: updatedRecord.fieldValue11,
+				fieldValue12: updatedRecord.fieldValue12,
+				fieldValue13: updatedRecord.fieldValue13,
+				fieldValue14: updatedRecord.fieldValue14,
+				fieldValue15: updatedRecord.fieldValue15,
+				fieldValue16: updatedRecord.fieldValue16,
+				fieldValue17: updatedRecord.fieldValue17,
+				fieldValue18: updatedRecord.fieldValue18,
+				fieldValue19: updatedRecord.fieldValue19,
+				fieldValue20: updatedRecord.fieldValue20,
+				fieldValue21: updatedRecord.fieldValue21,
+				fieldValue22: updatedRecord.fieldValue22,
+				fieldValue23: updatedRecord.fieldValue23,
+				fieldValue24: updatedRecord.fieldValue24,
+				fieldValue25: updatedRecord.fieldValue25,
+				fieldValue26: updatedRecord.fieldValue26,
+				fieldValue27: updatedRecord.fieldValue27,
+				fieldValue28: updatedRecord.fieldValue28,
+				fieldValue29: updatedRecord.fieldValue29,
+				fieldValue30: updatedRecord.fieldValue30,
+				fieldValue31: updatedRecord.fieldValue31,
+				fieldValue32: updatedRecord.fieldValue32,
+				fieldValue33: updatedRecord.fieldValue33,
+				fieldValue34: updatedRecord.fieldValue34,
+				fieldValue35: updatedRecord.fieldValue35,
+				fieldValue36: updatedRecord.fieldValue36,
+				fieldValue37: updatedRecord.fieldValue37,
+				fieldValue38: updatedRecord.fieldValue38,
+				fieldValue39: updatedRecord.fieldValue39,
+				fieldValue40: updatedRecord.fieldValue40,
+				createdAt: sequelize.literal(`CONVERT(DATETIME, '${formatLocalDate(new Date(currentRecord.createdAt))}', 120)`),
+				updatedAt: sequelize.literal(`CONVERT(DATETIME, '${formatLocalDate(new Date(updatedRecord.updatedAt))}', 120)`),
+				// createdAt: currentRecord.createdAt,
+				// updatedAt: updatedRecord.updatedAt,
+				isActive: updatedRecord.isActive,
+				formId: updatedRecord.formId,
+				changeType: 'UPDATE',
+			},
+			{ transaction: t }
 		)
 
 		await t.commit()
 		res.json({ message: 'Record updated successfully' })
 	} catch (error) {
-		await t.rollback()
+		if (t && !t.finished) {
+			try {
+				await t.rollback()
+			} catch (rollbackError) {
+				console.error('Rollback error:', rollbackError)
+			}
+		}
 		console.error('Error updating record:', error)
 		res.status(500).json({ error: error.message })
 	}
 })
 
 formDataRouter.delete('/:id', async (req, res) => {
+	let t
 	try {
-		const formId = req.params.id
-		console.log('deleteid', formId)
+		t = await sequelize.transaction()
+		const dataId = req.params.id
+		console.log('deleteid', dataId)
 
-		await FormData.update({ isActive: 0 }, { where: { dataId: formId } })
+		// Fetch the current record before updating
+		const currentRecord = await FormData.findByPk(dataId, { transaction: t })
+		if (!currentRecord) {
+			await t.rollback()
+			return res.status(404).json({ error: 'Record not found' })
+		}
 
+		// Update the record (e.g., mark it as inactive)
+		await FormData.update({ isActive: 0, updatedAt: new Date() }, { where: { dataId: dataId }, transaction: t })
+
+		// Fetch the updated record after deactivation
+		const updatedRecord = await FormData.findByPk(dataId, { transaction: t })
+		if (!updatedRecord) {
+			await t.rollback()
+			return res.status(404).json({ error: 'Record not found after deletion' })
+		}
+
+		// Create a history record for the deletion
+		await FormDataHistory.create(
+			{
+				dataId: updatedRecord.dataId,
+				templateId: updatedRecord.templateId,
+				fieldValue1: updatedRecord.fieldValue1,
+				fieldValue2: updatedRecord.fieldValue2,
+				fieldValue3: updatedRecord.fieldValue3,
+				fieldValue4: updatedRecord.fieldValue4,
+				fieldValue5: updatedRecord.fieldValue5,
+				fieldValue6: updatedRecord.fieldValue6,
+				fieldValue7: updatedRecord.fieldValue7,
+				fieldValue8: updatedRecord.fieldValue8,
+				fieldValue9: updatedRecord.fieldValue9,
+				fieldValue10: updatedRecord.fieldValue10,
+				fieldValue11: updatedRecord.fieldValue11,
+				fieldValue12: updatedRecord.fieldValue12,
+				fieldValue13: updatedRecord.fieldValue13,
+				fieldValue14: updatedRecord.fieldValue14,
+				fieldValue15: updatedRecord.fieldValue15,
+				fieldValue16: updatedRecord.fieldValue16,
+				fieldValue17: updatedRecord.fieldValue17,
+				fieldValue18: updatedRecord.fieldValue18,
+				fieldValue19: updatedRecord.fieldValue19,
+				fieldValue20: updatedRecord.fieldValue20,
+				fieldValue21: updatedRecord.fieldValue21,
+				fieldValue22: updatedRecord.fieldValue22,
+				fieldValue23: updatedRecord.fieldValue23,
+				fieldValue24: updatedRecord.fieldValue24,
+				fieldValue25: updatedRecord.fieldValue25,
+				fieldValue26: updatedRecord.fieldValue26,
+				fieldValue27: updatedRecord.fieldValue27,
+				fieldValue28: updatedRecord.fieldValue28,
+				fieldValue29: updatedRecord.fieldValue29,
+				fieldValue30: updatedRecord.fieldValue30,
+				fieldValue31: updatedRecord.fieldValue31,
+				fieldValue32: updatedRecord.fieldValue32,
+				fieldValue33: updatedRecord.fieldValue33,
+				fieldValue34: updatedRecord.fieldValue34,
+				fieldValue35: updatedRecord.fieldValue35,
+				fieldValue36: updatedRecord.fieldValue36,
+				fieldValue37: updatedRecord.fieldValue37,
+				fieldValue38: updatedRecord.fieldValue38,
+				fieldValue39: updatedRecord.fieldValue39,
+				fieldValue40: updatedRecord.fieldValue40,
+				createdAt: sequelize.literal(`CONVERT(DATETIME, '${formatLocalDate(new Date(currentRecord.createdAt))}', 120)`),
+				updatedAt: sequelize.literal(`CONVERT(DATETIME, '${formatLocalDate(new Date(updatedRecord.updatedAt))}', 120)`),
+				isActive: updatedRecord.isActive, // should now be 0
+				formId: updatedRecord.formId,
+				changeType: 'DELETE',
+			},
+			{ transaction: t }
+		)
+
+		await t.commit()
 		res.json({ message: 'Record deactivated successfully' })
 	} catch (error) {
+		if (t && !t.finished) {
+			try {
+				await t.rollback()
+			} catch (rollbackError) {
+				console.error('Rollback error:', rollbackError)
+			}
+		}
+		console.error('Error updating record:', error)
 		res.status(500).json({ error: error.message })
 	}
 })
