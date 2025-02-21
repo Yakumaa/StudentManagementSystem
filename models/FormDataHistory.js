@@ -14,6 +14,7 @@ const FormDataHistory = sequelize.define(
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			field: 'DataID',
+			//TODO: remove references
 			references: {
 				model: 'FormData',
 				key: 'DataID',
