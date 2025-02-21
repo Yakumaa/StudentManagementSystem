@@ -1,6 +1,7 @@
 const FormData = require('../models/FormData')
 const FormDataHistory = require('../models/FormDataHistory')
 const Form = require('../models/Form')
+const FormHistory = require('../models/FormHistory')
 const FormFile = require('../models/FormFile')
 const sequelize = require('../utils/config')
 const defineAssociations = require('../models/associations')
@@ -76,7 +77,21 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 			{
 				templateId: req.body.templateId,
 				submittedBy: loggedInUserId,
-				submittedAt: new Date(),
+				// submittedAt: new Date(),
+			},
+			{ transaction: t }
+		)
+
+		console.log('form', form)
+		await FormHistory.create(
+			{
+				formId: form.formId,
+				templateId: form.templateId,
+				submittedBy: form.submittedBy,
+				// submittedAt: form.submittedAt,
+
+				submittedAt: sequelize.literal(`CONVERT(DATETIME, '${formatLocalDate(new Date(form.submittedAt))}', 120)`),
+				changeType: 'INSERT',
 			},
 			{ transaction: t }
 		)

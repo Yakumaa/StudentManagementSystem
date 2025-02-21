@@ -59,7 +59,7 @@ const UserHistory = sequelize.define(
 		},
 		changeType: {
 			type: DataTypes.STRING(50),
-			allowNull: true,
+			allowNull: false,
 			field: 'ChangeType',
 		},
 	},
