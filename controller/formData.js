@@ -3,6 +3,7 @@ const FormDataHistory = require('../models/FormDataHistory')
 const Form = require('../models/Form')
 const FormHistory = require('../models/FormHistory')
 const FormFile = require('../models/FormFile')
+const FormFileHistory = require('../models/FormFileHistory')
 const sequelize = require('../utils/config')
 const defineAssociations = require('../models/associations')
 const formDataRouter = require('express').Router()
@@ -119,6 +120,27 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 				},
 				{ transaction: t }
 			)
+
+			// Create history record for profile picture
+			await FormFileHistory.create(
+				{
+					fileId: profilePictureRecord.fileId,
+					formId: profilePictureRecord.formId,
+					fileName: profilePictureRecord.fileName,
+					fileData: profilePictureRecord.fileData,
+					fileType: profilePictureRecord.fileType,
+					fileSize: profilePictureRecord.fileSize,
+					createdAt: sequelize.literal(
+						`CONVERT(DATETIME, '${formatLocalDate(new Date(profilePictureRecord.createdAt))}', 120)`
+					),
+					updatedAt: sequelize.literal(
+						`CONVERT(DATETIME, '${formatLocalDate(new Date(profilePictureRecord.updatedAt))}', 120)`
+					),
+					changeType: 'INSERT',
+				},
+				{ transaction: t }
+			)
+
 			// Save only the file name
 			profilePictureName = profilePictureRecord.fileName
 		}
@@ -136,6 +158,28 @@ formDataRouter.post('/', tokenExtractor, userExtractor, async (req, res) => {
 				},
 				{ transaction: t }
 			)
+
+			// Create history record for academic documents
+			await FormFileHistory.create(
+				{
+					fileId: academicDocsRecord.fileId,
+					formId: academicDocsRecord.formId,
+					fileName: academicDocsRecord.fileName,
+					fileData: academicDocsRecord.fileData,
+					fileType: academicDocsRecord.fileType,
+					fileSize: academicDocsRecord.fileSize,
+					createdAt: sequelize.literal(
+						`CONVERT(DATETIME, '${formatLocalDate(new Date(academicDocsRecord.createdAt))}', 120)`
+					),
+					updatedAt: sequelize.literal(
+						`CONVERT(DATETIME, '${formatLocalDate(new Date(academicDocsRecord.updatedAt))}', 120)`
+					),
+
+					changeType: 'INSERT',
+				},
+				{ transaction: t }
+			)
+
 			// Save only the file name
 			academicDocsName = academicDocsRecord.fileName
 		}
