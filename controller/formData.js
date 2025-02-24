@@ -70,6 +70,50 @@ formDataRouter.get('/count', async (req, res) => {
 	}
 })
 
+// Get profile picture
+formDataRouter.get('/:id/profile-picture', async (req, res) => {
+	try {
+		const formFile = await FormFile.findOne({
+			where: {
+				formId: req.params.id,
+				fileName: { [Op.like]: '%profile%' }, // Assuming profile pictures have "profile" in filename
+			},
+		})
+
+		if (!formFile) {
+			return res.status(404).send('Profile picture not found')
+		}
+
+		res.setHeader('Content-Type', formFile.fileType)
+		res.setHeader('Content-Disposition', `inline; filename="${formFile.fileName}"`)
+		res.send(formFile.fileData)
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get academic documents
+formDataRouter.get('/:id/academic-docs', async (req, res) => {
+	try {
+		const formFile = await FormFile.findOne({
+			where: {
+				formId: req.params.id,
+				fileName: { [Op.like]: '%academic%' }, // Assuming academic docs have "academic" in filename
+			},
+		})
+
+		if (!formFile) {
+			return res.status(404).send('Academic documents not found')
+		}
+
+		res.setHeader('Content-Type', formFile.fileType)
+		res.setHeader('Content-Disposition', `attachment; filename="${formFile.fileName}"`)
+		res.send(formFile.fileData)
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
 formDataRouter.get('/:id(\\d+)', async (req, res) => {
 	try {
 		const formData = await FormData.findByPk(req.params.id, {})

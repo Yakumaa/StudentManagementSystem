@@ -13,6 +13,7 @@ $(document).ready(function () {
 	const ITEMS_PER_PAGE = 10
 	let currentPage = 1
 	let totalStudents = 0
+	let currentStudentId = null
 
 	// Initialize
 	loadUserInfo()
@@ -24,7 +25,7 @@ $(document).ready(function () {
 	function loadUserInfo() {
 		const user = JSON.parse(localStorage.getItem('user'))
 		console.log('user', user)
-		$('#adminName').text(user.name)
+		$('#adminName').text(user.username)
 	}
 
 	function setupEventListeners() {
@@ -134,26 +135,25 @@ $(document).ready(function () {
 						const rows = response.data
 							.map(
 								(student) => `
-                            <tr>
-                                <td>${student.dataId}</td>
-                                <td>${student.fieldValue2} ${student.fieldValue3}</td>
-                                <td>${student.fieldValue5}</td>
-                                <td>${departmentMap[student.fieldValue10]}</td>
-                                <td>${student.fieldValue11}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent(${
-																			student.dataId
-																		})">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${
-																			student.dataId
-																		})">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `
+                  <tr style="cursor: pointer">
+                      <td onclick="showStudentDetails(${student.dataId})">${student.dataId}</td>
+                      <td onclick="showStudentDetails(${student.dataId})">${student.fieldValue1}</td>
+                      <td onclick="showStudentDetails(${student.dataId})">${student.fieldValue2} ${
+									student.fieldValue3
+								}</td>
+                      <td onclick="showStudentDetails(${student.dataId})">${student.fieldValue5}</td>
+                      <td onclick="showStudentDetails(${student.dataId})">${departmentMap[student.fieldValue10]}</td>
+                      <td onclick="showStudentDetails(${student.dataId})">${student.fieldValue11}</td>
+                      <td>
+                          <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent(${student.dataId})">
+                              <i class="bi bi-pencil"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${student.dataId})">
+                              <i class="bi bi-trash"></i>
+                          </button>
+                      </td>
+                  </tr>
+                `
 							)
 							.join('')
 
@@ -171,6 +171,48 @@ $(document).ready(function () {
 					.fail(handleError)
 			})
 			.fail(handleError)
+	}
+
+	window.showStudentDetails = function (studentId) {
+		currentStudentId = studentId
+
+		// Get departments for mapping
+		$.get(ENDPOINTS.departments)
+			.done((departments) => {
+				const departmentMap = departments.reduce((map, dept) => {
+					map[dept.departmentId] = dept.departmentName
+					return map
+				}, {})
+
+				// Get student details
+				$.get(`${ENDPOINTS.formdata}/${studentId}`)
+					.done((student) => {
+						// Hide list view and show details view
+						$('#studentsList').addClass('d-none')
+						$('#studentDetails').removeClass('d-none')
+
+						// Update details view with student information
+						$('#detailRegNo').text(student.fieldValue1)
+						$('#detailName').text(`${student.fieldValue2} ${student.fieldValue3}`)
+						$('#detailEmail').text(student.fieldValue5)
+						$('#detailGender').text(student.fieldValue6)
+						$('#detailDob').text(new Date(student.fieldValue7).toLocaleDateString())
+						$('#detailAddress').text(student.fieldValue8)
+						$('#detailPhone').text(student.fieldValue9)
+						$('#detailDepartment').text(departmentMap[student.fieldValue10])
+						$('#detailBatch').text(student.fieldValue11)
+						$('#detailSemester').text(student.fieldValue12)
+						$('#detailShift').text(student.fieldValue13)
+					})
+					.fail(handleError)
+			})
+			.fail(handleError)
+	}
+
+	window.showStudentsList = function () {
+		currentStudentId = null
+		$('#studentsList').removeClass('d-none')
+		$('#studentDetails').addClass('d-none')
 	}
 
 	function updatePagination(currentPage, totalPages) {
