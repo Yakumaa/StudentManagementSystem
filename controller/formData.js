@@ -5,6 +5,7 @@ const FormHistory = require('../models/FormHistory')
 const FormFile = require('../models/FormFile')
 const FormFileHistory = require('../models/FormFileHistory')
 const sequelize = require('../utils/config')
+const { Op } = require('sequelize')
 const defineAssociations = require('../models/associations')
 const formDataRouter = require('express').Router()
 const { tokenExtractor, userExtractor } = require('../utils/middleware')
@@ -22,13 +23,122 @@ function formatLocalDate(date) {
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
+// formDataRouter.get('/', async (req, res) => {
+// 	try {
+// 		const formData = await FormData.findAll({
+// 			where: { isActive: 1 }, // Only get active records
+// 		})
+// 		res.json(formData)
+// 	} catch (error) {
+// 		res.status(500).json({ error: error.message })
+// 	}
+// })
+
 formDataRouter.get('/', async (req, res) => {
 	try {
-		const formData = await FormData.findAll({
-			where: { isActive: 1 }, // Only get active records
+		const page = parseInt(req.query.page) || 1
+		const limit = parseInt(req.query.limit) || 10
+		const offset = (page - 1) * limit
+
+		const formData = await FormData.findAndCountAll({
+			where: { isActive: 1 },
+			limit: limit,
+			offset: offset,
+			order: [['dataId', 'DESC']], // Optional: Order by ID descending
 		})
-		res.json(formData)
+
+		res.json({
+			total: formData.count,
+			totalPages: Math.ceil(formData.count / limit),
+			currentPage: page,
+			data: formData.rows,
+		})
 	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get total count of records
+formDataRouter.get('/count', async (req, res) => {
+	try {
+		const count = await FormData.count({
+			where: { isActive: 1 },
+		})
+
+		res.json({ count })
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get profile picture
+formDataRouter.get('/:formId/profile-picture', async (req, res) => {
+	try {
+		const formFile = await FormFile.findOne({
+			where: {
+				formId: req.params.formId,
+				fileType: {
+					[Op.substring]: 'image/', // Using substring instead of LIKE
+				},
+			},
+		})
+
+		if (!formFile) {
+			return res.status(404).send('Profile picture not found')
+		}
+
+		// Set proper content type header
+		res.setHeader('Content-Type', formFile.fileType)
+		res.setHeader('Cache-Control', 'public, max-age=3600') // Optional: Cache for 1 hour
+
+		// Send the binary data directly
+		res.send(formFile.fileData)
+	} catch (error) {
+		console.error('Error retrieving profile picture:', error)
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get academic document
+formDataRouter.get('/:formId/academic-docs', async (req, res) => {
+	try {
+		const formFile = await FormFile.findOne({
+			where: {
+				formId: req.params.formId,
+				fileType: {
+					[Op.notLike]: 'image/%', // Using notLike for SQL Server
+				},
+			},
+		})
+
+		if (!formFile) {
+			return res.status(404).send('Academic documents not found')
+		}
+
+		// Set headers for file download
+		res.setHeader('Content-Type', formFile.fileType)
+		res.setHeader('Content-Length', formFile.fileSize)
+		res.setHeader('Content-Disposition', `inline; filename="${formFile.fileName}"`)
+
+		// Send the binary data
+		res.send(formFile.fileData)
+	} catch (error) {
+		console.error('Error retrieving academic document:', error)
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get file metadata (without binary data)
+formDataRouter.get('/:formId/files-info', async (req, res) => {
+	try {
+		const files = await FormFile.findAll({
+			where: { formId: req.params.formId },
+			attributes: ['fileId', 'fileName', 'fileType', 'fileSize', 'createdAt'], // Exclude fileData
+		})
+
+		res.json(files)
+	} catch (error) {
+		console.error('Error retrieving file information:', error)
 		res.status(500).json({ error: error.message })
 	}
 })
