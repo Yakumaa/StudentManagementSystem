@@ -1,14 +1,23 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../utils/config')
 
-const FormField = sequelize.define(
-	'FormField',
+const FormFieldHistory = sequelize.define(
+	'FormFieldHistory',
 	{
-		fieldId: {
+		historyId: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
+			field: 'HistoryID',
+		},
+		fieldId: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
 			field: 'FieldID',
+			references: {
+				model: 'FormFields',
+				key: 'FieldID',
+			},
 		},
 		templateId: {
 			type: DataTypes.INTEGER,
@@ -43,7 +52,6 @@ const FormField = sequelize.define(
 		},
 		validationRules: {
 			type: DataTypes.TEXT,
-			allowNull: true,
 			field: 'ValidationRules',
 			get() {
 				const rawValue = this.getDataValue('validationRules')
@@ -62,11 +70,16 @@ const FormField = sequelize.define(
 			defaultValue: sequelize.literal('GETDATE()'),
 			field: 'CreatedAt',
 		},
+		changeType: {
+			type: DataTypes.STRING(10),
+			allowNull: false,
+			field: 'ChangeType',
+		},
 	},
 	{
-		tableName: 'FormFields',
-		timestamps: true,
+		tableName: 'FormFieldHistory',
+		timestamps: false,
 	}
 )
 
-module.exports = FormField
+module.exports = FormFieldHistory
