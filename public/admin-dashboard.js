@@ -10,6 +10,10 @@ $(document).ready(function () {
 		formdata: `${API_URL}/form-data`,
 	}
 
+	const ITEMS_PER_PAGE = 10
+	let currentPage = 1
+	let totalStudents = 0
+
 	// Initialize
 	loadUserInfo()
 	loadStudents()
@@ -31,6 +35,15 @@ $(document).ready(function () {
 		// Form submissions
 		$('#saveStudentBtn').click(() => handleSave('student'))
 		$('#saveAdminBtn').click(() => handleSave('admin'))
+
+		// Pagination
+		$('#studentPagination').on('click', '.page-link', function (e) {
+			e.preventDefault()
+			const page = $(this).data('page')
+			if (page) {
+				loadStudents(page)
+			}
+		})
 	}
 
 	function handleNavigation(e) {
@@ -53,8 +66,58 @@ $(document).ready(function () {
 		}
 	}
 
-	function loadStudents() {
-		// fetch departments
+	// function loadStudents() {
+	// 	// fetch departments
+	// 	$.get(ENDPOINTS.departments)
+	// 		.done((departments) => {
+	// 			const departmentMap = departments.reduce((map, dept) => {
+	// 				map[dept.departmentId] = dept.departmentName
+	// 				return map
+	// 			}, {})
+
+	// 			// fetch and display students
+	// 			$.get(ENDPOINTS.formdata)
+	// 				.done((formData) => {
+	// 					const rows = formData
+	// 						.map(
+	// 							(student) => `
+	//                   <tr>
+	//                       <td>${student.dataId}</td>
+	//                       <td>${student.fieldValue1}</td>
+	//                       <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
+	//                       <td>${student.fieldValue5}</td>
+	//                       <td>${student.fieldValue6}</td>
+	//                       <td>${student.fieldValue7}</td>
+	//                       <td>${student.fieldValue8}</td>
+	//                       <td>${student.fieldValue9}</td>
+	//                       <td>${departmentMap[student.fieldValue10]}</td>
+	//                       <td>${student.fieldValue11}</td>
+	//                       <td>${student.fieldValue12}</td>
+	//                       <td>${student.fieldValue13}</td>
+	//                       <td>
+	//                           <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
+	//                               <i class="bi bi-pencil"></i>
+	//                           </button>
+	//                       </td>
+
+	//                       <td>
+	//                           <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
+	//                               <i class="bi bi-trash"></i>
+	//                           </button>
+	//                       </td>
+	//                   </tr>
+	//               `
+	// 						)
+	// 						.join('')
+
+	// 					$('#studentsTableBody').html(rows)
+	// 				})
+	// 				.fail(handleError)
+	// 		})
+	// 		.fail(handleError)
+	// }
+
+	function loadStudents(page = 1) {
 		$.get(ENDPOINTS.departments)
 			.done((departments) => {
 				const departmentMap = departments.reduce((map, dept) => {
@@ -62,47 +125,135 @@ $(document).ready(function () {
 					return map
 				}, {})
 
-				// fetch and display students
-				$.get(ENDPOINTS.formdata)
-					.done((formData) => {
-						const rows = formData
+				$.get(`${ENDPOINTS.formdata}?page=${page}&limit=${ITEMS_PER_PAGE}`)
+					.done((response) => {
+						// Update total from the response
+						totalStudents = response.total
+
+						// Map over response.data instead of response
+						const rows = response.data
 							.map(
 								(student) => `
-                    <tr>
-                        <td>${student.dataId}</td>
-                        <td>${student.fieldValue1}</td>
-                        <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
-                        <td>${student.fieldValue5}</td>
-                        <td>${student.fieldValue6}</td>
-                        <td>${student.fieldValue7}</td>
-                        <td>${student.fieldValue8}</td>
-                        <td>${student.fieldValue9}</td>
-                        <td>${departmentMap[student.fieldValue10]}</td>
-                        <td>${student.fieldValue11}</td>
-                        <td>${student.fieldValue12}</td>
-                        <td>${student.fieldValue13}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </td>
-                        
-                        <td>
-                            <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `
+                            <tr>
+                                <td>${student.dataId}</td>
+                                <td>${student.fieldValue2} ${student.fieldValue3}</td>
+                                <td>${student.fieldValue5}</td>
+                                <td>${departmentMap[student.fieldValue10]}</td>
+                                <td>${student.fieldValue11}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent(${
+																			student.dataId
+																		})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${
+																			student.dataId
+																		})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `
 							)
 							.join('')
 
 						$('#studentsTableBody').html(rows)
+
+						// Use totalPages from response if available, otherwise calculate it
+						const totalPages = response.totalPages || Math.ceil(totalStudents / ITEMS_PER_PAGE)
+						updatePagination(page, totalPages)
+
+						// Show total records info
+						const start = (page - 1) * ITEMS_PER_PAGE + 1
+						const end = Math.min(page * ITEMS_PER_PAGE, totalStudents)
+						$('#totalRecords').text(`Showing ${start} to ${end} of ${totalStudents} entries`)
 					})
 					.fail(handleError)
 			})
 			.fail(handleError)
 	}
+
+	function updatePagination(currentPage, totalPages) {
+		const pagination = $('#studentPagination')
+		pagination.empty()
+
+		// Don't show pagination if there's only one page
+		if (totalPages <= 1) return
+
+		// Previous button
+		pagination.append(`
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">&laquo;</a>
+        </li>
+    `)
+
+		// Calculate range of pages to show
+		let startPage = Math.max(1, currentPage - 2)
+		let endPage = Math.min(totalPages, startPage + 4)
+
+		// Adjust start if we're near the end
+		if (endPage - startPage < 4) {
+			startPage = Math.max(1, endPage - 4)
+		}
+
+		// Page numbers
+		for (let i = startPage; i <= endPage; i++) {
+			pagination.append(`
+            <li class="page-item ${i === parseInt(currentPage) ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+        `)
+		}
+
+		// Next button
+		pagination.append(`
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">&raquo;</a>
+        </li>
+    `)
+
+		// Add click event for pagination
+		$('.page-link')
+			.off('click')
+			.on('click', function (e) {
+				e.preventDefault()
+				const page = $(this).data('page')
+				if (page && page >= 1 && page <= totalPages) {
+					loadStudents(page)
+				}
+			})
+	}
+
+	// function loadAdmins() {
+	// 	$.get(ENDPOINTS.admins)
+	// 		.done((admins) => {
+	// 			const rows = admins
+	// 				.map(
+	// 					(admin) => `
+	//                 <tr>
+	//                     <td>${admin.userId}</td>
+	//                     <td>${admin.username}</td>
+	//                     <td>${admin.email}</td>
+	//                     <td>${admin.userTypeID === 1 ? 'Admin' : 'Normal'}</td>
+	//                     <td>
+	//                     <span>
+	//                       <button class="btn btn-sm btn-primary" onclick="editAdmin(${admin.userId})">
+	//                           <i class="bi bi-pencil"></i>
+	//                       </button>
+
+	//                       <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.userId})">
+	//                           <i class="bi bi-trash"></i>
+	//                       </button>
+	//                       </span>
+	//                     </td>
+	//                 </tr>
+	//             `
+	// 				)
+	// 				.join('')
+	// 			$('#adminsTableBody').html(rows)
+	// 		})
+	// 		.fail(handleError)
+	// }
 
 	function loadAdmins() {
 		$.get(ENDPOINTS.admins)
@@ -110,24 +261,23 @@ $(document).ready(function () {
 				const rows = admins
 					.map(
 						(admin) => `
-                  <tr>
-                      <td>${admin.userId}</td>
-                      <td>${admin.username}</td>
-                      <td>${admin.email}</td>
-                      <td>${admin.userTypeID === 1 ? 'Admin' : 'Normal'}</td>
-                      <td>
-                      <span>
-                        <button class="btn btn-sm btn-primary" onclick="editAdmin(${admin.userId})">
+                <tr>
+                    <td>${admin.userId}</td>
+                    <td>${admin.username}</td>
+                    <td>${admin.email}</td>
+                    <td><span class="badge ${admin.userTypeID === 1 ? 'bg-success' : 'bg-primary'}">${
+							admin.userTypeID === 1 ? 'Admin' : 'Normal'
+						}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editAdmin(${admin.userId})">
                             <i class="bi bi-pencil"></i>
                         </button>
-                      
-                        <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.userId})">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAdmin(${admin.userId})">
                             <i class="bi bi-trash"></i>
                         </button>
-                        </span>
-                      </td>
-                  </tr>
-              `
+                    </td>
+                </tr>
+            `
 					)
 					.join('')
 				$('#adminsTableBody').html(rows)

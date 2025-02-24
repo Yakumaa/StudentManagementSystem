@@ -22,12 +22,49 @@ function formatLocalDate(date) {
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
+// formDataRouter.get('/', async (req, res) => {
+// 	try {
+// 		const formData = await FormData.findAll({
+// 			where: { isActive: 1 }, // Only get active records
+// 		})
+// 		res.json(formData)
+// 	} catch (error) {
+// 		res.status(500).json({ error: error.message })
+// 	}
+// })
+
 formDataRouter.get('/', async (req, res) => {
 	try {
-		const formData = await FormData.findAll({
-			where: { isActive: 1 }, // Only get active records
+		const page = parseInt(req.query.page) || 1
+		const limit = parseInt(req.query.limit) || 10
+		const offset = (page - 1) * limit
+
+		const formData = await FormData.findAndCountAll({
+			where: { isActive: 1 },
+			limit: limit,
+			offset: offset,
+			order: [['dataId', 'DESC']], // Optional: Order by ID descending
 		})
-		res.json(formData)
+
+		res.json({
+			total: formData.count,
+			totalPages: Math.ceil(formData.count / limit),
+			currentPage: page,
+			data: formData.rows,
+		})
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get total count of records
+formDataRouter.get('/count', async (req, res) => {
+	try {
+		const count = await FormData.count({
+			where: { isActive: 1 },
+		})
+
+		res.json({ count })
 	} catch (error) {
 		res.status(500).json({ error: error.message })
 	}
