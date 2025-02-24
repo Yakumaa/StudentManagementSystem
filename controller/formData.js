@@ -5,6 +5,7 @@ const FormHistory = require('../models/FormHistory')
 const FormFile = require('../models/FormFile')
 const FormFileHistory = require('../models/FormFileHistory')
 const sequelize = require('../utils/config')
+const { Op } = require('sequelize')
 const defineAssociations = require('../models/associations')
 const formDataRouter = require('express').Router()
 const { tokenExtractor, userExtractor } = require('../utils/middleware')
@@ -71,12 +72,14 @@ formDataRouter.get('/count', async (req, res) => {
 })
 
 // Get profile picture
-formDataRouter.get('/:id/profile-picture', async (req, res) => {
+formDataRouter.get('/:formId/profile-picture', async (req, res) => {
 	try {
 		const formFile = await FormFile.findOne({
 			where: {
-				formId: req.params.id,
-				fileName: { [Op.like]: '%profile%' }, // Assuming profile pictures have "profile" in filename
+				formId: req.params.formId,
+				fileType: {
+					[Op.substring]: 'image/', // Using substring instead of LIKE
+				},
 			},
 		})
 
@@ -84,21 +87,27 @@ formDataRouter.get('/:id/profile-picture', async (req, res) => {
 			return res.status(404).send('Profile picture not found')
 		}
 
+		// Set proper content type header
 		res.setHeader('Content-Type', formFile.fileType)
-		res.setHeader('Content-Disposition', `inline; filename="${formFile.fileName}"`)
+		res.setHeader('Cache-Control', 'public, max-age=3600') // Optional: Cache for 1 hour
+
+		// Send the binary data directly
 		res.send(formFile.fileData)
 	} catch (error) {
+		console.error('Error retrieving profile picture:', error)
 		res.status(500).json({ error: error.message })
 	}
 })
 
-// Get academic documents
-formDataRouter.get('/:id/academic-docs', async (req, res) => {
+// Get academic document
+formDataRouter.get('/:formId/academic-docs', async (req, res) => {
 	try {
 		const formFile = await FormFile.findOne({
 			where: {
-				formId: req.params.id,
-				fileName: { [Op.like]: '%academic%' }, // Assuming academic docs have "academic" in filename
+				formId: req.params.formId,
+				fileType: {
+					[Op.notLike]: 'image/%', // Using notLike for SQL Server
+				},
 			},
 		})
 
@@ -106,10 +115,30 @@ formDataRouter.get('/:id/academic-docs', async (req, res) => {
 			return res.status(404).send('Academic documents not found')
 		}
 
+		// Set headers for file download
 		res.setHeader('Content-Type', formFile.fileType)
-		res.setHeader('Content-Disposition', `attachment; filename="${formFile.fileName}"`)
+		res.setHeader('Content-Length', formFile.fileSize)
+		res.setHeader('Content-Disposition', `inline; filename="${formFile.fileName}"`)
+
+		// Send the binary data
 		res.send(formFile.fileData)
 	} catch (error) {
+		console.error('Error retrieving academic document:', error)
+		res.status(500).json({ error: error.message })
+	}
+})
+
+// Get file metadata (without binary data)
+formDataRouter.get('/:formId/files-info', async (req, res) => {
+	try {
+		const files = await FormFile.findAll({
+			where: { formId: req.params.formId },
+			attributes: ['fileId', 'fileName', 'fileType', 'fileSize', 'createdAt'], // Exclude fileData
+		})
+
+		res.json(files)
+	} catch (error) {
+		console.error('Error retrieving file information:', error)
 		res.status(500).json({ error: error.message })
 	}
 })

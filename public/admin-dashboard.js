@@ -174,6 +174,7 @@ $(document).ready(function () {
 	}
 
 	window.showStudentDetails = function (studentId) {
+		console.log('studentId', studentId)
 		currentStudentId = studentId
 
 		// Get departments for mapping
@@ -184,29 +185,116 @@ $(document).ready(function () {
 					return map
 				}, {})
 
-				// Get student details
 				$.get(`${ENDPOINTS.formdata}/${studentId}`)
 					.done((student) => {
-						// Hide list view and show details view
-						$('#studentsList').addClass('d-none')
-						$('#studentDetails').removeClass('d-none')
+						const formId = student.formId
+						console.log('formId', formId)
 
-						// Update details view with student information
-						$('#detailRegNo').text(student.fieldValue1)
-						$('#detailName').text(`${student.fieldValue2} ${student.fieldValue3}`)
-						$('#detailEmail').text(student.fieldValue5)
-						$('#detailGender').text(student.fieldValue6)
-						$('#detailDob').text(new Date(student.fieldValue7).toLocaleDateString())
-						$('#detailAddress').text(student.fieldValue8)
-						$('#detailPhone').text(student.fieldValue9)
-						$('#detailDepartment').text(departmentMap[student.fieldValue10])
-						$('#detailBatch').text(student.fieldValue11)
-						$('#detailSemester').text(student.fieldValue12)
-						$('#detailShift').text(student.fieldValue13)
+						// get the file info using the formId
+						$.get(`${ENDPOINTS.formdata}/${formId}/files-info`)
+							.done((files) => {
+								// Hide list view and show details view
+								$('#studentsList').addClass('d-none')
+								$('#studentDetails').removeClass('d-none')
+
+								// Update basic information
+								$('#detailRegNo').text(student.fieldValue1)
+								$('#detailName').text(`${student.fieldValue2} ${student.fieldValue3}`)
+								$('#detailEmail').text(student.fieldValue5)
+								$('#detailGender').text(student.fieldValue6)
+								$('#detailDob').text(new Date(student.fieldValue7).toLocaleDateString())
+								$('#detailAddress').text(student.fieldValue8)
+								$('#detailPhone').text(student.fieldValue9)
+								$('#detailDepartment').text(departmentMap[student.fieldValue10])
+								$('#detailBatch').text(student.fieldValue11)
+								$('#detailSemester').text(student.fieldValue12)
+								$('#detailShift').text(student.fieldValue13)
+
+								// Handle profile picture using formId (not studentId)
+								const profilePicUrl = `${ENDPOINTS.formdata}/${formId}/profile-picture`
+								console.log('profilePicUrl', profilePicUrl)
+								$('#profilePicture').attr('src', profilePicUrl)
+
+								// Display academic documents (non-image files)
+								const academicDocs = files.filter((f) => !f.fileType.startsWith('image/'))
+								if (academicDocs.length > 0) {
+									// Clear previous academic docs listing
+									$('#academicDocsList').empty()
+									academicDocs.forEach((doc) => {
+										const docIcon = getDocumentIcon(doc.fileType)
+										const listItem = `
+        <div class="academic-doc mb-2">
+          <i class="bi ${docIcon} me-2"></i>
+          <span class="doc-name">${doc.fileName}</span>
+          <small class="text-muted">(${formatFileSize(doc.fileSize)})</small>
+          <button class="btn btn-sm btn-primary ms-2" onclick="viewDocument(${formId}, '${doc.fileType}')">View</button>
+          <button class="btn btn-sm btn-success ms-1" onclick="downloadDocument(${formId}, '${doc.fileType}', '${
+											doc.fileName
+										}')">Download</button>
+        </div>
+      `
+										$('#academicDocsList').append(listItem)
+									})
+								} else {
+									$('#academicDocsList').html('<p>No document uploaded</p>')
+								}
+							})
+							.fail(handleError)
 					})
 					.fail(handleError)
 			})
 			.fail(handleError)
+	}
+
+	// Helper function to format file size
+	function formatFileSize(bytes) {
+		if (bytes === 0) return '0 Bytes'
+		const k = 1024
+		const sizes = ['Bytes', 'KB', 'MB', 'GB']
+		const i = Math.floor(Math.log(bytes) / Math.log(k))
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+	}
+
+	// Helper function to get appropriate icon for file type
+	function getDocumentIcon(fileType) {
+		const iconMap = {
+			'application/pdf': 'bi-file-pdf',
+			'application/msword': 'bi-file-word',
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'bi-file-word',
+			'application/vnd.ms-excel': 'bi-file-excel',
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'bi-file-excel',
+			'image/': 'bi-file-image',
+			default: 'bi-file-text',
+		}
+		return Object.entries(iconMap).find(([key]) => fileType.includes(key))?.[1] || iconMap.default
+	}
+
+	// Functions to handle file operations
+
+	// Opens the file in a new window/tab. Uses formId and fileType to determine the endpoint.
+	window.viewDocument = function (formId, fileType) {
+		// If the file is an image, use the profile-picture endpoint; otherwise, academic-docs.
+		const endpoint = fileType.startsWith('image/')
+			? `${ENDPOINTS.formdata}/${formId}/profile-picture`
+			: `${ENDPOINTS.formdata}/${formId}/academic-docs`
+		window.open(endpoint, '_blank')
+	}
+
+	// Downloads the file by fetching its blob and triggering a download.
+	window.downloadDocument = function (formId, fileType, fileName) {
+		const endpoint = fileType.startsWith('image/')
+			? `${ENDPOINTS.formdata}/${formId}/profile-picture`
+			: `${ENDPOINTS.formdata}/${formId}/academic-docs`
+		fetch(endpoint)
+			.then((response) => response.blob())
+			.then((blob) => {
+				const link = document.createElement('a')
+				link.href = window.URL.createObjectURL(blob)
+				link.download = fileName
+				link.click()
+				window.URL.revokeObjectURL(link.href)
+			})
+			.catch((error) => console.error('Error downloading file:', error))
 	}
 
 	window.showStudentsList = function () {
