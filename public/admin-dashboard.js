@@ -2,7 +2,6 @@ $(document).ready(function () {
 	// Check authentication
 	if (!utils.checkAuth()) return
 
-	// Constants
 	const API_URL = 'http://localhost:3000/api'
 	const ENDPOINTS = {
 		admins: `${API_URL}/users`,
@@ -67,57 +66,6 @@ $(document).ready(function () {
 		}
 	}
 
-	// function loadStudents() {
-	// 	// fetch departments
-	// 	$.get(ENDPOINTS.departments)
-	// 		.done((departments) => {
-	// 			const departmentMap = departments.reduce((map, dept) => {
-	// 				map[dept.departmentId] = dept.departmentName
-	// 				return map
-	// 			}, {})
-
-	// 			// fetch and display students
-	// 			$.get(ENDPOINTS.formdata)
-	// 				.done((formData) => {
-	// 					const rows = formData
-	// 						.map(
-	// 							(student) => `
-	//                   <tr>
-	//                       <td>${student.dataId}</td>
-	//                       <td>${student.fieldValue1}</td>
-	//                       <td>${student.fieldValue2 + ' ' + student.fieldValue3}</td>
-	//                       <td>${student.fieldValue5}</td>
-	//                       <td>${student.fieldValue6}</td>
-	//                       <td>${student.fieldValue7}</td>
-	//                       <td>${student.fieldValue8}</td>
-	//                       <td>${student.fieldValue9}</td>
-	//                       <td>${departmentMap[student.fieldValue10]}</td>
-	//                       <td>${student.fieldValue11}</td>
-	//                       <td>${student.fieldValue12}</td>
-	//                       <td>${student.fieldValue13}</td>
-	//                       <td>
-	//                           <button class="btn btn-sm btn-primary" onclick="editStudent(${student.dataId})">
-	//                               <i class="bi bi-pencil"></i>
-	//                           </button>
-	//                       </td>
-
-	//                       <td>
-	//                           <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.dataId})">
-	//                               <i class="bi bi-trash"></i>
-	//                           </button>
-	//                       </td>
-	//                   </tr>
-	//               `
-	// 						)
-	// 						.join('')
-
-	// 					$('#studentsTableBody').html(rows)
-	// 				})
-	// 				.fail(handleError)
-	// 		})
-	// 		.fail(handleError)
-	// }
-
 	function loadStudents(page = 1) {
 		$.get(ENDPOINTS.departments)
 			.done((departments) => {
@@ -128,10 +76,8 @@ $(document).ready(function () {
 
 				$.get(`${ENDPOINTS.formdata}?page=${page}&limit=${ITEMS_PER_PAGE}`)
 					.done((response) => {
-						// Update total from the response
 						totalStudents = response.total
 
-						// Map over response.data instead of response
 						const rows = response.data
 							.map(
 								(student) => `
@@ -271,9 +217,8 @@ $(document).ready(function () {
 
 	// Functions to handle file operations
 
-	// Opens the file in a new window/tab. Uses formId and fileType to determine the endpoint.
+	// Opens the file in a new window/tab.
 	window.viewDocument = function (formId, fileType) {
-		// If the file is an image, use the profile-picture endpoint; otherwise, academic-docs.
 		const endpoint = fileType.startsWith('image/')
 			? `${ENDPOINTS.formdata}/${formId}/profile-picture`
 			: `${ENDPOINTS.formdata}/${formId}/academic-docs`
@@ -307,7 +252,6 @@ $(document).ready(function () {
 		const pagination = $('#studentPagination')
 		pagination.empty()
 
-		// Don't show pagination if there's only one page
 		if (totalPages <= 1) return
 
 		// Previous button
@@ -342,7 +286,7 @@ $(document).ready(function () {
         </li>
     `)
 
-		// Add click event for pagination
+		// click event for pagination
 		$('.page-link')
 			.off('click')
 			.on('click', function (e) {
@@ -353,37 +297,6 @@ $(document).ready(function () {
 				}
 			})
 	}
-
-	// function loadAdmins() {
-	// 	$.get(ENDPOINTS.admins)
-	// 		.done((admins) => {
-	// 			const rows = admins
-	// 				.map(
-	// 					(admin) => `
-	//                 <tr>
-	//                     <td>${admin.userId}</td>
-	//                     <td>${admin.username}</td>
-	//                     <td>${admin.email}</td>
-	//                     <td>${admin.userTypeID === 1 ? 'Admin' : 'Normal'}</td>
-	//                     <td>
-	//                     <span>
-	//                       <button class="btn btn-sm btn-primary" onclick="editAdmin(${admin.userId})">
-	//                           <i class="bi bi-pencil"></i>
-	//                       </button>
-
-	//                       <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.userId})">
-	//                           <i class="bi bi-trash"></i>
-	//                       </button>
-	//                       </span>
-	//                     </td>
-	//                 </tr>
-	//             `
-	// 				)
-	// 				.join('')
-	// 			$('#adminsTableBody').html(rows)
-	// 		})
-	// 		.fail(handleError)
-	// }
 
 	function loadAdmins() {
 		$.get(ENDPOINTS.admins)
@@ -492,7 +405,7 @@ $(document).ready(function () {
 			})
 	}
 
-	// Add file validation on input change
+	// file validation on input change
 	$('input[name="profilePicture"]').on('change', function () {
 		const file = this.files[0]
 		if (file) {
@@ -728,10 +641,8 @@ $(document).ready(function () {
           </div>
       `
 
-		// Remove any existing alerts
 		$('.alert').remove()
 
-		// Add new alert at the top of the container
 		$('.alert-toast').prepend(alert)
 	}
 })

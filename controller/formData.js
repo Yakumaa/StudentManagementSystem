@@ -23,17 +23,6 @@ function formatLocalDate(date) {
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-// formDataRouter.get('/', async (req, res) => {
-// 	try {
-// 		const formData = await FormData.findAll({
-// 			where: { isActive: 1 }, // Only get active records
-// 		})
-// 		res.json(formData)
-// 	} catch (error) {
-// 		res.status(500).json({ error: error.message })
-// 	}
-// })
-
 formDataRouter.get('/', async (req, res) => {
 	try {
 		const page = parseInt(req.query.page) || 1
@@ -44,7 +33,7 @@ formDataRouter.get('/', async (req, res) => {
 			where: { isActive: 1 },
 			limit: limit,
 			offset: offset,
-			order: [['dataId', 'DESC']], // Optional: Order by ID descending
+			order: [['dataId', 'DESC']],
 		})
 
 		res.json({
