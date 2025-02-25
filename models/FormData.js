@@ -10,15 +10,6 @@ const FormData = sequelize.define(
 			autoIncrement: true,
 			field: 'DataID',
 		},
-		// studentId: {
-		// 	type: DataTypes.INTEGER,
-		// 	allowNull: false,
-		// 	field: 'StudentID',
-		// 	references: {
-		// 		model: 'Students',
-		// 		key: 'StudentID',
-		// 	},
-		// },
 		templateId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

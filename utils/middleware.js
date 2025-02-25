@@ -1,6 +1,4 @@
 const jwt = require('jsonwebtoken')
-const Student = require('../models/Student')
-const Admin = require('../models/Admin')
 
 const requestLogger = (request, response, next) => {
 	console.log('Method:', request.method)
